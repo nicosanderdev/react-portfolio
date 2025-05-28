@@ -1,0 +1,58 @@
+:root {
+  --main-bg: #111827;      /* Tailwind gray-900 */
+  --accent-color: #34d399; /* Tailwind emerald-400 */
+}
+
+.box {
+  
+}
+
+.console-box {
+  display: flex;
+  gap: 10px;
+  background: var(--main-bg);
+}
+
+.pulse-graph {
+  flex: 1;
+  background: var(--main-bg);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.pulse-graph canvas {
+  display: block;
+}
+
+.side-bars {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  background: var(--main-bg);
+  gap: 6px;
+  width: 40px;
+  transform: rotate(0.5turn);
+}
+
+.bar {
+  width: 100%;
+  background: var(--accent-color);
+  transition: height 0.2s;
+}
+
+.lights {
+  background: var(--main-bg);
+  display: flex;
+  padding: 8px 8px;
+  gap: 10px;
+}
+
+.light {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--main-bg);
+  border: 2px solid var(--accent-color);
+  transition: background 0.2s;
+}
