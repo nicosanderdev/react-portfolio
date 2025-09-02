@@ -1,10 +1,10 @@
 :root {
-  --main-bg: #111827;      /* Tailwind gray-900 */
+  --main-bg: rgba(0,0,0,0);      /* Tailwind gray-900 */
   --accent-color: #34d399; /* Tailwind emerald-400 */
 }
 
 .box {
-  
+  padding-right: 15px;
 }
 
 .console-box {
@@ -44,8 +44,16 @@
 .lights {
   background: var(--main-bg);
   display: flex;
-  padding: 8px 8px;
+  padding: 0px 8px;
   gap: 10px;
+}
+
+.square {
+  width: 20px;
+  height: 10px;
+  background: var(--main-bg);
+  border: 2px solid var(--accent-color);
+  transition: background 0.2s;
 }
 
 .light {

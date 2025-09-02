@@ -24,13 +24,13 @@ export default function LoadingBarBattery({ onFinish }: LoadingBarBatteryProps) 
   }, [onFinish]);
 
   return (
-    <div className="w-full flex-col justify-center items-center h-50 z-50 bg-gray-900">
-      <div className="flex gap-[2px] border-2 border-gray-200 p-[3px] h-22 w-fit mx-auto">
+    <div className="w-full flex-col justify-center items-center h-50 z-50">
+      <div className="flex gap-[2px] border-2 p-[3px] h-22 w-fit mx-auto">
         {Array.from({ length: totalBars }).map((_, index) => (
           <div
             key={index}
             className={`w-6 h-20 transition-all duration-50 ${
-              index < filledCount ? "bg-emerald-400" : "bg-gray-900"
+              index < filledCount ? "bg-emerald-400" : ""
             }`}
           />
         ))}

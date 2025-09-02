@@ -1,0 +1,16 @@
+# client/.dockerignore
+
+# Dependencies
+node_modules
+
+# Build artifacts
+build
+.DS_Store
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Env files
+.env

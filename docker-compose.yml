@@ -5,8 +5,10 @@ services:
       - "3000:80"
     depends_on:
       - backend
+    container_name: portfolio_frontend_dev
 
   backend:
     build: ./server
     ports:
       - "5000:5000"
+    container_name: portfolio_backend_dev
