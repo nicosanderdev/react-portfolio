@@ -53,14 +53,14 @@ export default function Homepage() {
 
     return (
         <>
-        <div className="border border-gray-500 rounded shadow-lg text-emerald-400 font-mono p-6 flex flex-col w-full lg:w-[1400px] h-full overflow-y-auto sm:overflow-hidden">
+        <div className="border border-gray-500 rounded shadow-lg text-emerald-400 font-mono p-6 flex flex-col w-full lg:w-[1400px] h-full overflow-y-auto my-4">
              {/** windows top bar */}
             <div className="flex items-center flex-col sm:flex-row sm:justify-between border-b border-gray-500 pb-2">
                 <LanguageSelector />
                 <div className="text-sm"><span className="font-mono"><TypingText key={t(getHeaderText())} text={`~/portfolio/${t(getHeaderText())}`}/></span></div>
             </div>
 
-            <div className="w-full rounded border border-2 border-gray-500 p-3 mt-4 h-auto sm:h-full">
+            <div className="w-full rounded border-2 border-gray-500 p-3 mt-4 h-auto">
                 {/** Title */}
                 <div className="bg-emerald-400 text-center p-2"><span className="text-gray-900 text-3xl font-mono w-full">Nicolás Sander</span></div>
                 
