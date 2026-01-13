@@ -1,4 +1,3 @@
-import './App.css'
 import TronGrid from './components/Background/TronGrid'
 import Homepage from './pages/Homepage'
 
