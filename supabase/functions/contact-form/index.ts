@@ -9,16 +9,31 @@ interface ContactFormData {
   phone?: string
 }
 
+// CORS headers helper
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+}
+
 console.log("Contact form Edge Function loaded!")
 
 Deno.serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
   // Only allow POST requests
   if (req.method !== 'POST') {
     return new Response(
       JSON.stringify({ error: 'Method not allowed' }),
       {
         status: 405,
-        headers: { "Content-Type": "application/json" }
+        headers: { 
+          ...corsHeaders,
+          "Content-Type": "application/json" 
+        }
       }
     )
   }
@@ -33,7 +48,10 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: 'Missing required fields: name, email, message' }),
         {
           status: 400,
-          headers: { "Content-Type": "application/json" }
+          headers: { 
+            ...corsHeaders,
+            "Content-Type": "application/json" 
+          }
         }
       )
     }
@@ -45,7 +63,10 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: 'Invalid email format' }),
         {
           status: 400,
-          headers: { "Content-Type": "application/json" }
+          headers: { 
+            ...corsHeaders,
+            "Content-Type": "application/json" 
+          }
         }
       )
     }
@@ -74,7 +95,10 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: 'Failed to save contact submission' }),
         {
           status: 500,
-          headers: { "Content-Type": "application/json" }
+          headers: { 
+            ...corsHeaders,
+            "Content-Type": "application/json" 
+          }
         }
       )
     }
@@ -131,7 +155,10 @@ Deno.serve(async (req) => {
       JSON.stringify({ success: 'Message sent and saved successfully!' }),
       {
         status: 200,
-        headers: { "Content-Type": "application/json" }
+        headers: { 
+          ...corsHeaders,
+          "Content-Type": "application/json" 
+        }
       }
     )
 
@@ -141,7 +168,10 @@ Deno.serve(async (req) => {
       JSON.stringify({ error: 'Internal server error' }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json" }
+        headers: { 
+          ...corsHeaders,
+          "Content-Type": "application/json" 
+        }
       }
     )
   }
