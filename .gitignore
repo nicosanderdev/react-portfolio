@@ -24,3 +24,6 @@ yarn-error.log*
 client/.env.prod
 
 supabase/functions/.env
+
+.agents/*
+.scratch/*

@@ -3,9 +3,10 @@ type HomeButtonProps = {
   anchor: string;
   active: string;
   setActive: (value: string) => void;
+  showEnMarker?: boolean;
 };
 
-function HomeButtonComponent({ label, anchor, active, setActive } : HomeButtonProps) {
+function HomeButtonComponent({ label, anchor, active, setActive, showEnMarker = false } : HomeButtonProps) {
     const isActive = active === anchor;
 
     return (
@@ -14,6 +15,15 @@ function HomeButtonComponent({ label, anchor, active, setActive } : HomeButtonPr
                 <li className="text-center">
                     <span className={`text-3xl font-mono ${isActive ? "font-bold text-gray-900" : "text-gray-200"}`}>
                         [] {label}
+                        {showEnMarker && (
+                            <span
+                                className={`ml-2 text-xs align-super font-bold tracking-wide ${
+                                    isActive ? "text-gray-800" : "text-emerald-400"
+                                }`}
+                            >
+                                EN
+                            </span>
+                        )}
                     </span>
                 </li>
             </div>
