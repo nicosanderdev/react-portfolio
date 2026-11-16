@@ -16,7 +16,7 @@ function FileIcon() {
   return (
     <svg className="dir-icon dir-icon-file" viewBox="0 0 24 24" aria-hidden="true">
       <path
-        className="outline"
+        className="dir-outline"
         d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"
       />
       <path className="lines" pathLength="100" d="M9 13h6M9 16h4" />
@@ -41,9 +41,6 @@ function RowContents({ name, type }: { name: string; type: DirectoryItem["type"]
   return (
     <>
       {type === "folder" ? <FolderIcon /> : <FileIcon />}
-      <span className="dir-caret" aria-hidden="true">
-        &gt;
-      </span>
       <span className="dir-name">{name}</span>
     </>
   );
