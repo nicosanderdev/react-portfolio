@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Folder link lab</title>
+  <style>
+    @font-face {
+      font-family: "Share Tech Mono";
+      src: url("../assets/fonts/ShareTechMono-Regular.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --emerald: #34d399;
+      --emerald-bright: #6ee7b7;
+      --emerald-press: #10b981;
+      --paper: #e5e7eb;
+      --white: #ffffff;
+      --muted: #9ca3af;
+      --frame: #6b7280;
+      --bg: #242424;
+      --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--emerald);
+      font-family: "Share Tech Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+      font-synthesis: weight;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .shell {
+      width: min(80rem, calc(100% - 2rem));
+      margin: 1.5rem auto 3rem;
+      padding: clamp(0.85rem, 2vw, 1.5rem);
+      border: 1px solid var(--frame);
+      border-radius: 0.25rem;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-bottom: 0.55rem;
+      border-bottom: 1px solid var(--frame);
+      font-size: 0.875rem;
+    }
+
+    h1 {
+      margin: 1.15rem 0 0;
+      color: var(--paper);
+      font-size: 1.35rem;
+      font-weight: 400;
+    }
+
+    .lede,
+    .note,
+    .readout {
+      margin: 0.45rem 0 0;
+      max-width: 44rem;
+      color: var(--muted);
+      font-size: 0.8125rem;
+      line-height: 1.5;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 1.25rem;
+      margin: 1rem 0 0;
+      padding: 0;
+      list-style: none;
+      color: var(--muted);
+      font-size: 0.8125rem;
+    }
+
+    .legend strong { color: var(--emerald); font-weight: 400; }
+
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 2.5rem 2rem;
+      margin-top: 1.75rem;
+    }
+
+    .option { width: min(100%, 24rem); }
+
+    h2 {
+      margin: 0;
+      color: var(--paper);
+      font-size: 1rem;
+      font-weight: 400;
+    }
+
+    .samples {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin-top: 0.9rem;
+    }
+
+    .sample {
+      display: grid;
+      grid-template-columns: 5.4rem minmax(0, 1fr);
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .tag {
+      color: var(--emerald);
+      font-size: 0.75rem;
+      letter-spacing: 0.04em;
+    }
+
+    .listing { margin-top: 1.15rem; }
+
+    .path {
+      margin: 0 0 0.5rem;
+      color: var(--white);
+      font-size: 1.25rem;
+    }
+
+    .tree,
+    .tree ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .tree > li { margin-left: 16px; }
+    .tree ul > li { margin-left: 20px; }
+
+    .row {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      max-width: 100%;
+      margin: 0;
+      padding: 0.12rem 0;
+      border: 0;
+      background: none;
+      color: var(--white);
+      font: inherit;
+      font-size: 1.25rem;
+      line-height: 1.75rem;
+      text-align: left;
+      cursor: pointer;
+      user-select: none;
+      appearance: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .folder { cursor: default; }
+    .is-specimen { cursor: default; pointer-events: none; }
+
+    .row:focus { outline: none; }
+
+    .row:focus-visible {
+      outline: 2px solid var(--emerald);
+      outline-offset: 3px;
+    }
+
+    .icon {
+      width: 1.5rem;
+      height: 1.5rem;
+      flex: 0 0 auto;
+      overflow: visible;
+      color: var(--emerald);
+      transition: color 160ms ease, transform 180ms var(--ease), scale 80ms ease;
+    }
+
+    .icon-folder .body,
+    .icon-folder .lid { fill: currentColor; stroke: none; }
+
+    .icon-folder .sheet {
+      fill: #022c22;
+      stroke: none;
+      opacity: 0;
+    }
+
+    .icon-folder .lid {
+      transform-box: fill-box;
+      transform-origin: 0% 100%;
+    }
+
+    .icon-file .outline,
+    .icon-file .lines,
+    .icon-file .gleam,
+    .icon-folder .gleam {
+      fill: none;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+    }
+
+    .icon-file .outline { stroke: currentColor; stroke-width: 2; }
+
+    .icon-file .lines {
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-dasharray: 100;
+      stroke-dashoffset: 100;
+      opacity: 0;
+    }
+
+    .gleam {
+      stroke: transparent;
+      stroke-width: 2.25;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .name {
+      background-image: linear-gradient(currentColor, currentColor);
+      background-repeat: no-repeat;
+      background-position: 0 100%;
+      background-size: 0 1px;
+      transition: color 160ms ease, background-size 180ms var(--ease), font-weight 80ms ease;
+    }
+
+    .caret {
+      display: none;
+      overflow: hidden;
+      color: var(--emerald);
+      white-space: nowrap;
+    }
+
+    .row:hover .name,
+    .row.is-hovered .name,
+    .row.is-current .name {
+      color: var(--emerald);
+      background-size: 100% 1px;
+    }
+
+    .row.is-current .name {
+      font-weight: 700;
+      background-size: 100% 2px;
+    }
+
+    .row:active,
+    .row.is-pressed { transform: translateY(1px); }
+
+    .row:active .icon,
+    .row.is-pressed .icon { scale: 0.9; }
+
+    .row:active .name,
+    .row.is-current:active .name,
+    .row.is-pressed .name {
+      color: var(--emerald-press);
+      font-weight: 400;
+      background-size: 100% 1px;
+    }
+
+    /* Draw: a bright segment runs around the icon, and the glyph lightens. */
+    .opt-draw .gleam {
+      stroke: #f0fdf4;
+      stroke-dasharray: 18 82;
+      stroke-dashoffset: 100;
+    }
+
+    .opt-draw .row:hover .icon,
+    .opt-draw .is-hovered .icon,
+    .opt-draw .is-current .icon { color: var(--emerald-bright); }
+
+    .opt-draw .is-pressed .icon { color: var(--emerald-press); }
+
+    .opt-draw .row:hover .gleam {
+      opacity: 1;
+      animation: gleam-once 0.7s linear;
+    }
+
+    .opt-draw .demo .icon { animation: draw-color 1.8s ease infinite; }
+
+    .opt-draw .demo .gleam { animation: gleam 1.8s linear infinite; }
+
+    /* Open: folder lid lifts, file writes its lines. */
+    .opt-open .lid { transition: transform 220ms var(--ease); }
+
+    .opt-open .lines,
+    .opt-open .sheet { transition: stroke-dashoffset 320ms ease 40ms, opacity 180ms ease; }
+
+    .opt-open .row:hover .lid,
+    .opt-open .is-hovered .lid,
+    .opt-open .is-current .lid,
+    .opt-open .is-pressed .lid {
+      transform: translateY(-2px) rotate(-18deg);
+    }
+
+    .opt-open .row:hover .lines,
+    .opt-open .is-hovered .lines,
+    .opt-open .is-current .lines,
+    .opt-open .is-pressed .lines,
+    .opt-open .row:hover .sheet,
+    .opt-open .is-hovered .sheet,
+    .opt-open .is-current .sheet,
+    .opt-open .is-pressed .sheet {
+      stroke-dashoffset: 0;
+      opacity: 1;
+    }
+
+    .opt-open .demo .lid { animation: lid-cycle 1.8s var(--ease) infinite; }
+    .opt-open .demo .lines,
+    .opt-open .demo .sheet { animation: lines-cycle 1.8s ease infinite; }
+
+    /* Prompt: icon steps aside and a caret types in. */
+    .opt-prompt .caret {
+      display: inline-block;
+      width: 0;
+      opacity: 0;
+      transition: width 160ms ease, opacity 120ms ease;
+    }
+
+    .opt-prompt .row:hover .caret,
+    .opt-prompt .is-hovered .caret,
+    .opt-prompt .is-current .caret,
+    .opt-prompt .is-pressed .caret {
+      width: 1ch;
+      opacity: 1;
+    }
+
+    .opt-prompt .row:hover .icon,
+    .opt-prompt .is-hovered .icon {
+      transform: translateX(3px);
+      color: var(--emerald-bright);
+    }
+
+    .opt-prompt .is-current .icon { color: var(--emerald); }
+
+    .opt-prompt .is-pressed .icon,
+    .opt-prompt .row:active .icon {
+      transform: translateX(3px);
+      color: var(--emerald-press);
+    }
+
+    .opt-prompt .demo .caret { animation: caret-cycle 1.8s ease infinite; }
+    .opt-prompt .demo .icon { animation: icon-step 1.8s var(--ease) infinite; }
+
+    .demo .name { animation: name-cycle 1.8s ease infinite; }
+
+    @keyframes gleam-once {
+      from { stroke-dashoffset: 100; }
+      to { stroke-dashoffset: 0; }
+    }
+
+    @keyframes gleam {
+      0%, 12% { opacity: 0; stroke-dashoffset: 100; }
+      24% { opacity: 1; stroke-dashoffset: 86; }
+      68% { opacity: 1; stroke-dashoffset: 0; }
+      84%, 100% { opacity: 0; stroke-dashoffset: 0; }
+    }
+
+    @keyframes draw-color {
+      0%, 14% { color: var(--emerald); }
+      36%, 72% { color: var(--emerald-bright); }
+      100% { color: var(--emerald); }
+    }
+
+    @keyframes lid-cycle {
+      0%, 16% { transform: none; }
+      40%, 72% { transform: translateY(-2px) rotate(-18deg); }
+      100% { transform: none; }
+    }
+
+    @keyframes lines-cycle {
+      0%, 20% { stroke-dashoffset: 100; opacity: 0; }
+      46%, 72% { stroke-dashoffset: 0; opacity: 1; }
+      100% { stroke-dashoffset: 100; opacity: 0; }
+    }
+
+    @keyframes caret-cycle {
+      0%, 16% { width: 0; opacity: 0; }
+      40%, 72% { width: 1ch; opacity: 1; }
+      100% { width: 0; opacity: 0; }
+    }
+
+    @keyframes icon-step {
+      0%, 16% { transform: none; color: var(--emerald); }
+      40%, 72% { transform: translateX(3px); color: var(--emerald-bright); }
+      100% { transform: none; color: var(--emerald); }
+    }
+
+    @keyframes name-cycle {
+      0%, 14% { color: var(--white); background-size: 0 1px; }
+      36%, 72% { color: var(--emerald); background-size: 100% 1px; }
+      100% { color: var(--white); background-size: 0 1px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .row,
+      .row *,
+      .icon,
+      .demo .name {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <span>// link lab</span>
+      <span>~/portfolio/files</span>
+    </header>
+
+    <h1>Folder links</h1>
+    <p class="lede">The directory under the menu. File names turn emerald and gain an underline in every option. The three options are different icon animations. Click a file in a live tree to commit it.</p>
+
+    <ul class="legend">
+      <li><strong>Default</strong> white name, emerald icon</li>
+      <li><strong>Hovered</strong> emerald name, underline, icon plays</li>
+      <li><strong>Pressed</strong> name deepens, icon shrinks, row sinks</li>
+      <li><strong>Active</strong> underline stays thick, name is bold</li>
+    </ul>
+
+    <div class="options">
+      <section class="option opt-draw" aria-labelledby="draw-heading">
+        <h2 id="draw-heading">// draw</h2>
+        <p class="note">A bright trace runs around the icon, and the glyph lightens.</p>
+        <div class="samples" aria-hidden="true">
+          <div class="sample"><span class="tag">Default</span><button class="row file is-specimen" type="button" tabindex="-1"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="name">sdi_react.md</span></button></div>
+          <div class="sample"><span class="tag">Hovered</span><button class="row file is-specimen is-hovered" type="button" tabindex="-1"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="name">sdi_react.md</span></button></div>
+          <div class="sample"><span class="tag">Pressed</span><button class="row file is-specimen is-hovered is-pressed" type="button" tabindex="-1"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="name">sdi_react.md</span></button></div>
+          <div class="sample"><span class="tag">Active</span><button class="row file is-specimen is-current" type="button" tabindex="-1"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="name">sdi_react.md</span></button></div>
+          <div class="sample"><span class="tag">Folder</span><div class="row folder is-specimen"><svg class="icon icon-folder" viewBox="0 0 24 24" aria-hidden="true"><path class="body" pathLength="100" d="M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9H3Z"/><path class="sheet" d="M5 11h14v7H5z"/><path class="lid" pathLength="100" d="M3 6a2 2 0 0 1 2-2h5.532a2 2 0 0 1 1.536.72l1.9 2.28H3V6Z"/><path class="gleam" pathLength="100" d="M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9H3Z"/><path class="gleam" pathLength="100" d="M3 6a2 2 0 0 1 2-2h5.532a2 2 0 0 1 1.536.72l1.9 2.28H3V6Z"/></svg><span class="name">projects</span></div></div>
+          <div class="sample"><span class="tag">Folder on</span><div class="row folder is-specimen is-hovered"><svg class="icon icon-folder" viewBox="0 0 24 24" aria-hidden="true"><path class="body" pathLength="100" d="M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9H3Z"/><path class="sheet" d="M5 11h14v7H5z"/><path class="lid" pathLength="100" d="M3 6a2 2 0 0 1 2-2h5.532a2 2 0 0 1 1.536.72l1.9 2.28H3V6Z"/><path class="gleam" pathLength="100" d="M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9H3Z"/><path class="gleam" pathLength="100" d="M3 6a2 2 0 0 1 2-2h5.532a2 2 0 0 1 1.536.72l1.9 2.28H3V6Z"/></svg><span class="name">projects</span></div></div>
+        </div>
+        <p class="note">Hover loop</p>
+        <div class="sample" aria-hidden="true"><span class="tag">Play</span><div class="row file is-specimen demo"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="name">sdi_react.md</span></div></div>
+        <div class="listing" data-tree>
+          <p class="path">/portfolio/files/</p>
+          <p class="readout">// selection none</p>
+          <ul class="tree">
+            <li><button class="row file" type="button" data-name="resume.pdf"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="name">resume.pdf</span></button></li>
+            <li>
+              <div class="row folder"><svg class="icon icon-folder" viewBox="0 0 24 24" aria-hidden="true"><path class="body" pathLength="100" d="M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9H3Z"/><path class="sheet" d="M5 11h14v7H5z"/><path class="lid" pathLength="100" d="M3 6a2 2 0 0 1 2-2h5.532a2 2 0 0 1 1.536.72l1.9 2.28H3V6Z"/><path class="gleam" pathLength="100" d="M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9H3Z"/><path class="gleam" pathLength="100" d="M3 6a2 2 0 0 1 2-2h5.532a2 2 0 0 1 1.536.72l1.9 2.28H3V6Z"/></svg><span class="name">projects</span></div>
+              <ul>
+                <li><button class="row file" type="button" data-name="sdi_react.md"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="name">sdi_react.md</span></button></li>
+                <li><button class="row file" type="button" data-name="SDI_api"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="name">SDI_api</span></button></li>
+                <li><button class="row file" type="button" data-name="AppElecciones"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="name">AppElecciones</span></button></li>
+              </ul>
+            </li>
+            <li><button class="row file" type="button" data-name="linked-in.sh"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="name">linked-in.sh</span></button></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="option opt-open" aria-labelledby="open-heading">
+        <h2 id="open-heading">// open</h2>
+        <p class="note">The folder lid lifts and shows a sheet. The file writes two lines inside.</p>
+        <div class="samples" aria-hidden="true">
+          <div class="sample"><span class="tag">Default</span><button class="row file is-specimen" type="button" tabindex="-1"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="name">sdi_react.md</span></button></div>
+          <div class="sample"><span class="tag">Hovered</span><button class="row file is-specimen is-hovered" type="button" tabindex="-1"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="name">sdi_react.md</span></button></div>
+          <div class="sample"><span class="tag">Pressed</span><button class="row file is-specimen is-hovered is-pressed" type="button" tabindex="-1"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="name">sdi_react.md</span></button></div>
+          <div class="sample"><span class="tag">Active</span><button class="row file is-specimen is-current" type="button" tabindex="-1"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="name">sdi_react.md</span></button></div>
+          <div class="sample"><span class="tag">Folder</span><div class="row folder is-specimen"><svg class="icon icon-folder" viewBox="0 0 24 24" aria-hidden="true"><path class="body" pathLength="100" d="M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9H3Z"/><path class="sheet" d="M5 11h14v7H5z"/><path class="lid" pathLength="100" d="M3 6a2 2 0 0 1 2-2h5.532a2 2 0 0 1 1.536.72l1.9 2.28H3V6Z"/><path class="gleam" pathLength="100" d="M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9H3Z"/><path class="gleam" pathLength="100" d="M3 6a2 2 0 0 1 2-2h5.532a2 2 0 0 1 1.536.72l1.9 2.28H3V6Z"/></svg><span class="name">projects</span></div></div>
+          <div class="sample"><span class="tag">Folder on</span><div class="row folder is-specimen is-hovered"><svg class="icon icon-folder" viewBox="0 0 24 24" aria-hidden="true"><path class="body" pathLength="100" d="M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9H3Z"/><path class="sheet" d="M5 11h14v7H5z"/><path class="lid" pathLength="100" d="M3 6a2 2 0 0 1 2-2h5.532a2 2 0 0 1 1.536.72l1.9 2.28H3V6Z"/><path class="gleam" pathLength="100" d="M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9H3Z"/><path class="gleam" pathLength="100" d="M3 6a2 2 0 0 1 2-2h5.532a2 2 0 0 1 1.536.72l1.9 2.28H3V6Z"/></svg><span class="name">projects</span></div></div>
+        </div>
+        <p class="note">Hover loop</p>
+        <div class="sample" aria-hidden="true"><span class="tag">Play</span><div class="row folder is-specimen demo"><svg class="icon icon-folder" viewBox="0 0 24 24" aria-hidden="true"><path class="body" pathLength="100" d="M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9H3Z"/><path class="sheet" d="M5 11h14v7H5z"/><path class="lid" pathLength="100" d="M3 6a2 2 0 0 1 2-2h5.532a2 2 0 0 1 1.536.72l1.9 2.28H3V6Z"/><path class="gleam" pathLength="100" d="M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9H3Z"/><path class="gleam" pathLength="100" d="M3 6a2 2 0 0 1 2-2h5.532a2 2 0 0 1 1.536.72l1.9 2.28H3V6Z"/></svg><span class="name">projects</span></div></div>
+        <div class="listing" data-tree>
+          <p class="path">/portfolio/files/</p>
+          <p class="readout">// selection none</p>
+          <ul class="tree">
+            <li><button class="row file" type="button" data-name="resume.pdf"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="name">resume.pdf</span></button></li>
+            <li>
+              <div class="row folder"><svg class="icon icon-folder" viewBox="0 0 24 24" aria-hidden="true"><path class="body" pathLength="100" d="M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9H3Z"/><path class="sheet" d="M5 11h14v7H5z"/><path class="lid" pathLength="100" d="M3 6a2 2 0 0 1 2-2h5.532a2 2 0 0 1 1.536.72l1.9 2.28H3V6Z"/><path class="gleam" pathLength="100" d="M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9H3Z"/><path class="gleam" pathLength="100" d="M3 6a2 2 0 0 1 2-2h5.532a2 2 0 0 1 1.536.72l1.9 2.28H3V6Z"/></svg><span class="name">projects</span></div>
+              <ul>
+                <li><button class="row file" type="button" data-name="sdi_react.md"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="name">sdi_react.md</span></button></li>
+                <li><button class="row file" type="button" data-name="SDI_api"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="name">SDI_api</span></button></li>
+                <li><button class="row file" type="button" data-name="AppElecciones"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="name">AppElecciones</span></button></li>
+              </ul>
+            </li>
+            <li><button class="row file" type="button" data-name="linked-in.sh"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="name">linked-in.sh</span></button></li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="option opt-prompt" aria-labelledby="prompt-heading">
+        <h2 id="prompt-heading">// prompt</h2>
+        <p class="note">The icon steps aside and a caret types in front of the name.</p>
+        <div class="samples" aria-hidden="true">
+          <div class="sample"><span class="tag">Default</span><button class="row file is-specimen" type="button" tabindex="-1"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="caret" aria-hidden="true">&gt;</span><span class="name">sdi_react.md</span></button></div>
+          <div class="sample"><span class="tag">Hovered</span><button class="row file is-specimen is-hovered" type="button" tabindex="-1"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="caret" aria-hidden="true">&gt;</span><span class="name">sdi_react.md</span></button></div>
+          <div class="sample"><span class="tag">Pressed</span><button class="row file is-specimen is-hovered is-pressed" type="button" tabindex="-1"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="caret" aria-hidden="true">&gt;</span><span class="name">sdi_react.md</span></button></div>
+          <div class="sample"><span class="tag">Active</span><button class="row file is-specimen is-current" type="button" tabindex="-1"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="caret" aria-hidden="true">&gt;</span><span class="name">sdi_react.md</span></button></div>
+          <div class="sample"><span class="tag">Folder</span><div class="row folder is-specimen"><svg class="icon icon-folder" viewBox="0 0 24 24" aria-hidden="true"><path class="body" pathLength="100" d="M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9H3Z"/><path class="sheet" d="M5 11h14v7H5z"/><path class="lid" pathLength="100" d="M3 6a2 2 0 0 1 2-2h5.532a2 2 0 0 1 1.536.72l1.9 2.28H3V6Z"/><path class="gleam" pathLength="100" d="M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9H3Z"/><path class="gleam" pathLength="100" d="M3 6a2 2 0 0 1 2-2h5.532a2 2 0 0 1 1.536.72l1.9 2.28H3V6Z"/></svg><span class="caret" aria-hidden="true">&gt;</span><span class="name">projects</span></div></div>
+          <div class="sample"><span class="tag">Folder on</span><div class="row folder is-specimen is-hovered"><svg class="icon icon-folder" viewBox="0 0 24 24" aria-hidden="true"><path class="body" pathLength="100" d="M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9H3Z"/><path class="sheet" d="M5 11h14v7H5z"/><path class="lid" pathLength="100" d="M3 6a2 2 0 0 1 2-2h5.532a2 2 0 0 1 1.536.72l1.9 2.28H3V6Z"/><path class="gleam" pathLength="100" d="M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9H3Z"/><path class="gleam" pathLength="100" d="M3 6a2 2 0 0 1 2-2h5.532a2 2 0 0 1 1.536.72l1.9 2.28H3V6Z"/></svg><span class="caret" aria-hidden="true">&gt;</span><span class="name">projects</span></div></div>
+        </div>
+        <p class="note">Hover loop</p>
+        <div class="sample" aria-hidden="true"><span class="tag">Play</span><div class="row file is-specimen demo"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="caret" aria-hidden="true">&gt;</span><span class="name">sdi_react.md</span></div></div>
+        <div class="listing" data-tree>
+          <p class="path">/portfolio/files/</p>
+          <p class="readout">// selection none</p>
+          <ul class="tree">
+            <li><button class="row file" type="button" data-name="resume.pdf"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="caret" aria-hidden="true">&gt;</span><span class="name">resume.pdf</span></button></li>
+            <li>
+              <div class="row folder"><svg class="icon icon-folder" viewBox="0 0 24 24" aria-hidden="true"><path class="body" pathLength="100" d="M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9H3Z"/><path class="sheet" d="M5 11h14v7H5z"/><path class="lid" pathLength="100" d="M3 6a2 2 0 0 1 2-2h5.532a2 2 0 0 1 1.536.72l1.9 2.28H3V6Z"/><path class="gleam" pathLength="100" d="M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9H3Z"/><path class="gleam" pathLength="100" d="M3 6a2 2 0 0 1 2-2h5.532a2 2 0 0 1 1.536.72l1.9 2.28H3V6Z"/></svg><span class="caret" aria-hidden="true">&gt;</span><span class="name">projects</span></div>
+              <ul>
+                <li><button class="row file" type="button" data-name="sdi_react.md"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="caret" aria-hidden="true">&gt;</span><span class="name">sdi_react.md</span></button></li>
+                <li><button class="row file" type="button" data-name="SDI_api"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="caret" aria-hidden="true">&gt;</span><span class="name">SDI_api</span></button></li>
+                <li><button class="row file" type="button" data-name="AppElecciones"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="caret" aria-hidden="true">&gt;</span><span class="name">AppElecciones</span></button></li>
+              </ul>
+            </li>
+            <li><button class="row file" type="button" data-name="linked-in.sh"><svg class="icon icon-file" viewBox="0 0 24 24" aria-hidden="true"><path class="outline" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="gleam" pathLength="100" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/><path class="lines" pathLength="100" d="M9 13h6M9 16h4"/></svg><span class="caret" aria-hidden="true">&gt;</span><span class="name">linked-in.sh</span></button></li>
+          </ul>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var trees = document.querySelectorAll("[data-tree]");
+      for (var i = 0; i < trees.length; i++) {
+        trees[i].addEventListener("click", function (event) {
+          var row = event.target.closest(".file");
+          if (!row || !this.contains(row)) return;
+          var files = this.querySelectorAll(".file");
+          for (var n = 0; n < files.length; n++) {
+            var on = files[n] === row;
+            files[n].classList.toggle("is-current", on);
+            if (on) files[n].setAttribute("aria-current", "true");
+            else files[n].removeAttribute("aria-current");
+          }
+          var readout = this.querySelector(".readout");
+          if (readout) readout.textContent = "// selection " + row.getAttribute("data-name");
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

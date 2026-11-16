@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Menu button lab</title>
+  <style>
+    @font-face {
+      font-family: "Share Tech Mono";
+      src: url("../assets/fonts/ShareTechMono-Regular.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --emerald: #34d399;
+      --emerald-deep: #059669;
+      --emerald-flash: #6ee7b7;
+      --ink: #111827;
+      --ink-soft: #1f2937;
+      --paper: #e5e7eb;
+      --muted: #9ca3af;
+      --frame: #6b7280;
+      --bg: #242424;
+      --wipe-ms: 180ms;
+      --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--emerald);
+      font-family: "Share Tech Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+      font-synthesis: weight;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .shell {
+      width: min(72rem, calc(100% - 2rem));
+      margin: 1.5rem auto 3rem;
+      padding: clamp(0.85rem, 2vw, 1.5rem);
+      border: 1px solid var(--frame);
+      border-radius: 0.25rem;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-bottom: 0.55rem;
+      border-bottom: 1px solid var(--frame);
+      font-size: 0.875rem;
+    }
+
+    h1 {
+      margin: 1.15rem 0 0;
+      color: var(--paper);
+      font-size: 1.35rem;
+      font-weight: 400;
+    }
+
+    .lede {
+      margin: 0.45rem 0 0;
+      max-width: 42rem;
+      color: var(--muted);
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem 1.25rem;
+      margin: 1rem 0 0;
+      padding: 0;
+      list-style: none;
+      color: var(--muted);
+      font-size: 0.8125rem;
+    }
+
+    .legend strong {
+      color: var(--emerald);
+      font-weight: 400;
+    }
+
+    .stage {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 2.75rem 3rem;
+      margin-top: 1.75rem;
+    }
+
+    .col { width: min(100%, 36rem); }
+
+    h2 {
+      margin: 0;
+      color: var(--paper);
+      font-size: 1rem;
+      font-weight: 400;
+    }
+
+    .note,
+    .readout {
+      margin: 0.4rem 0 0;
+      color: var(--muted);
+      font-size: 0.8125rem;
+      line-height: 1.45;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 1.35rem;
+      margin-top: 1.15rem;
+      padding-right: 1.5rem;
+    }
+
+    .specimen { margin: 0; }
+
+    .specimen figcaption {
+      margin: 0 0 0.4rem;
+      color: var(--emerald);
+      font-size: 0.75rem;
+      letter-spacing: 0.04em;
+    }
+
+    .menu {
+      list-style: none;
+      margin: 1.15rem 0 0;
+      padding: 0 1.5rem 0 0;
+    }
+
+    .menu li + li { margin-top: 1.5rem; }
+
+    .menu-btn {
+      position: relative;
+      isolation: isolate;
+      display: block;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid var(--emerald);
+      background: transparent;
+      color: var(--paper);
+      font: inherit;
+      font-size: 1.875rem;
+      line-height: 2.25rem;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      appearance: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 80ms ease, box-shadow 80ms ease, border-color 80ms ease;
+    }
+
+    .menu-btn.is-specimen {
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .menu-btn:focus { outline: none; }
+
+    .menu-btn:focus-visible {
+      outline: 2px solid var(--emerald);
+      outline-offset: 3px;
+    }
+
+    .wipe {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background: var(--emerald);
+      transform: scaleX(0);
+      transform-origin: left center;
+      transition: transform var(--wipe-ms) var(--ease);
+      pointer-events: none;
+    }
+
+    .face {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1ch;
+      padding: 1.5rem;
+    }
+
+    .face-ink {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      color: var(--ink);
+    }
+
+    .face-paper {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      color: var(--paper);
+      clip-path: inset(0 0 0 0);
+      transition: clip-path var(--wipe-ms) var(--ease);
+      pointer-events: none;
+    }
+
+    .prompt {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    .chevron {
+      display: inline-block;
+      max-width: 0;
+      overflow: hidden;
+      vertical-align: bottom;
+      transition: max-width 140ms ease 40ms;
+    }
+
+    .name {
+      min-width: 0;
+      text-align: center;
+    }
+
+    .en {
+      margin-left: 0.35rem;
+      color: var(--emerald);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.025em;
+      line-height: 0;
+      vertical-align: super;
+    }
+
+    .face-ink .en { color: var(--ink-soft); }
+
+    .cursor {
+      display: inline-block;
+      width: 0.62ch;
+      height: 1.05em;
+      margin-left: 0.28ch;
+      background: currentColor;
+      vertical-align: -0.12em;
+      opacity: 0;
+    }
+
+    .menu-btn:hover .wipe,
+    .menu-btn:focus-visible .wipe,
+    .menu-btn.is-hovered .wipe,
+    .menu-btn.is-current .wipe,
+    .menu-btn:active .wipe,
+    .menu-btn.is-pressed .wipe {
+      transform: scaleX(1);
+    }
+
+    .menu-btn:hover .face-paper,
+    .menu-btn:focus-visible .face-paper,
+    .menu-btn.is-hovered .face-paper,
+    .menu-btn.is-current .face-paper,
+    .menu-btn:active .face-paper,
+    .menu-btn.is-pressed .face-paper {
+      clip-path: inset(0 0 0 100%);
+    }
+
+    .menu-btn:hover .chevron,
+    .menu-btn:focus-visible .chevron,
+    .menu-btn.is-hovered .chevron,
+    .menu-btn.is-current .chevron,
+    .menu-btn:active .chevron,
+    .menu-btn.is-pressed .chevron {
+      max-width: 1.15ch;
+    }
+
+    .menu-btn:hover .cursor,
+    .menu-btn:focus-visible .cursor,
+    .menu-btn.is-hovered .cursor {
+      animation: blink 1.05s steps(1, end) infinite;
+    }
+
+    .menu-btn.is-current { font-weight: 700; }
+
+    .menu-btn.is-current .cursor {
+      opacity: 0;
+      animation: none;
+    }
+
+    .menu-btn.is-current:hover .cursor,
+    .menu-btn.is-current:focus-visible .cursor {
+      animation: blink 1.05s steps(1, end) infinite;
+    }
+
+    .menu-btn:active,
+    .menu-btn.is-pressed {
+      border-color: #047857;
+      transform: translateY(3px) scale(0.985);
+      box-shadow: inset 0 3px 0 rgb(0 0 0 / 0.28);
+    }
+
+    .menu-btn:active .wipe,
+    .menu-btn.is-pressed .wipe {
+      background: var(--emerald-deep);
+    }
+
+    .menu-btn:active .wipe {
+      animation: keystrike 140ms ease forwards;
+    }
+
+    .menu-btn:active .cursor,
+    .menu-btn.is-current:active .cursor,
+    .menu-btn.is-pressed .cursor {
+      opacity: 1;
+      animation: none;
+    }
+
+    .demo-hover .wipe {
+      animation: demo-wipe 3s var(--ease) infinite;
+      transition: none;
+    }
+
+    .demo-hover .face-paper {
+      animation: demo-clip 3s var(--ease) infinite;
+      transition: none;
+    }
+
+    .demo-hover .chevron {
+      animation: demo-chevron 3s ease infinite;
+      transition: none;
+    }
+
+    .demo-hover .cursor {
+      animation: demo-cursor 3s linear infinite;
+    }
+
+    .demo-press {
+      animation: press-bump 1.6s ease-in-out infinite;
+    }
+
+    .demo-press .wipe {
+      transform: scaleX(1);
+      animation: press-flash 1.6s ease-in-out infinite;
+      transition: none;
+    }
+
+    .demo-press .cursor {
+      animation: press-cursor 1.6s linear infinite;
+    }
+
+    @keyframes blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    @keyframes keystrike {
+      0% { background-color: var(--emerald-flash); filter: brightness(1.2); }
+      100% { background-color: var(--emerald-deep); filter: none; }
+    }
+
+    @keyframes demo-wipe {
+      0%, 16% { transform: scaleX(0); }
+      38%, 70% { transform: scaleX(1); }
+      92%, 100% { transform: scaleX(0); }
+    }
+
+    @keyframes demo-clip {
+      0%, 16% { clip-path: inset(0 0 0 0); }
+      38%, 70% { clip-path: inset(0 0 0 100%); }
+      92%, 100% { clip-path: inset(0 0 0 0); }
+    }
+
+    @keyframes demo-chevron {
+      0%, 22% { max-width: 0; }
+      42%, 66% { max-width: 1.15ch; }
+      88%, 100% { max-width: 0; }
+    }
+
+    @keyframes demo-cursor {
+      0%, 14% { opacity: 0; }
+      20%, 30% { opacity: 1; }
+      30.01%, 40% { opacity: 0; }
+      40.01%, 50% { opacity: 1; }
+      50.01%, 60% { opacity: 0; }
+      60.01%, 70% { opacity: 1; }
+      78%, 100% { opacity: 0; }
+    }
+
+    @keyframes press-bump {
+      0%, 42%, 100% {
+        border-color: var(--emerald);
+        transform: none;
+        box-shadow: inset 0 0 0 transparent;
+      }
+      50%, 76% {
+        border-color: #047857;
+        transform: translateY(3px) scale(0.985);
+        box-shadow: inset 0 3px 0 rgb(0 0 0 / 0.28);
+      }
+    }
+
+    @keyframes press-flash {
+      0%, 42%, 100% { background-color: var(--emerald); filter: none; }
+      48% { background-color: var(--emerald-flash); filter: brightness(1.2); }
+      62%, 76% { background-color: var(--emerald-deep); filter: none; }
+    }
+
+    @keyframes press-cursor {
+      0%, 18% { opacity: 1; }
+      18.01%, 36% { opacity: 0; }
+      36.01%, 44% { opacity: 1; }
+      48%, 100% { opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .menu-btn,
+      .menu-btn *,
+      .demo-press {
+        animation: none !important;
+        transition: none !important;
+      }
+
+      .demo-hover .wipe,
+      .demo-press .wipe,
+      .is-hovered .wipe,
+      .is-pressed .wipe,
+      .is-current .wipe {
+        transform: scaleX(1);
+      }
+
+      .demo-hover .face-paper,
+      .demo-press .face-paper,
+      .is-hovered .face-paper,
+      .is-pressed .face-paper,
+      .is-current .face-paper {
+        clip-path: inset(0 0 0 100%);
+      }
+
+      .demo-hover .chevron,
+      .demo-press .chevron,
+      .is-hovered .chevron,
+      .is-pressed .chevron,
+      .is-current .chevron {
+        max-width: 1.15ch;
+      }
+
+      .demo-hover .cursor,
+      .is-hovered .cursor {
+        opacity: 1;
+      }
+
+      .demo-press,
+      .is-pressed {
+        border-color: #047857;
+        transform: translateY(3px) scale(0.985);
+        box-shadow: inset 0 3px 0 rgb(0 0 0 / 0.28);
+      }
+
+      .demo-press .wipe,
+      .is-pressed .wipe {
+        background: var(--emerald-deep);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <span>// button lab</span>
+      <span>~/portfolio/menu</span>
+    </header>
+
+    <h1>Main menu buttons</h1>
+    <p class="lede">The homepage menu, on its own. Same emerald outline, mono line, and [] label. Hover selects the line like code. Press strikes the key. Active is the line that stays.</p>
+
+    <ul class="legend">
+      <li><strong>Default</strong> outline, empty brackets</li>
+      <li><strong>Hovered</strong> selection wipe, prompt types, cursor blinks</li>
+      <li><strong>Pressed</strong> sinks, flashes, cursor locks</li>
+      <li><strong>Active</strong> fill stays, bold, prompt stays</li>
+    </ul>
+
+    <div class="stage">
+      <section class="col" aria-labelledby="states-heading">
+        <h2 id="states-heading">// states</h2>
+        <p class="note">Held still, so the four frames can be compared.</p>
+        <div class="stack">
+          <figure class="specimen" aria-hidden="true">
+            <figcaption>Default</figcaption>
+            <button class="menu-btn is-specimen" type="button" tabindex="-1">
+              <span class="wipe"></span>
+              <span class="face face-ink">
+                <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                <span class="name">About me<span class="cursor"></span></span>
+              </span>
+              <span class="face face-paper">
+                <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                <span class="name">About me<span class="cursor"></span></span>
+              </span>
+            </button>
+          </figure>
+
+          <figure class="specimen" aria-hidden="true">
+            <figcaption>Active</figcaption>
+            <button class="menu-btn is-specimen is-current" type="button" tabindex="-1">
+              <span class="wipe"></span>
+              <span class="face face-ink">
+                <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                <span class="name">About me<span class="cursor"></span></span>
+              </span>
+              <span class="face face-paper">
+                <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                <span class="name">About me<span class="cursor"></span></span>
+              </span>
+            </button>
+          </figure>
+
+          <figure class="specimen" aria-hidden="true">
+            <figcaption>Hovered</figcaption>
+            <button class="menu-btn is-specimen is-hovered" type="button" tabindex="-1">
+              <span class="wipe"></span>
+              <span class="face face-ink">
+                <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                <span class="name">About me<span class="cursor"></span></span>
+              </span>
+              <span class="face face-paper">
+                <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                <span class="name">About me<span class="cursor"></span></span>
+              </span>
+            </button>
+          </figure>
+
+          <figure class="specimen" aria-hidden="true">
+            <figcaption>Pressed</figcaption>
+            <button class="menu-btn is-specimen is-hovered is-pressed" type="button" tabindex="-1">
+              <span class="wipe"></span>
+              <span class="face face-ink">
+                <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                <span class="name">About me<span class="cursor"></span></span>
+              </span>
+              <span class="face face-paper">
+                <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                <span class="name">About me<span class="cursor"></span></span>
+              </span>
+            </button>
+          </figure>
+        </div>
+      </section>
+
+      <section class="col" aria-labelledby="motion-heading">
+        <h2 id="motion-heading">// motion</h2>
+        <p class="note">Hover types a prompt and selects the line. Press strikes the key.</p>
+        <div class="stack">
+          <figure class="specimen" aria-hidden="true">
+            <figcaption>Hover</figcaption>
+            <button class="menu-btn is-specimen demo-hover" type="button" tabindex="-1">
+              <span class="wipe"></span>
+              <span class="face face-ink">
+                <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                <span class="name">About me<span class="cursor"></span></span>
+              </span>
+              <span class="face face-paper">
+                <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                <span class="name">About me<span class="cursor"></span></span>
+              </span>
+            </button>
+          </figure>
+
+          <figure class="specimen" aria-hidden="true">
+            <figcaption>Pressed</figcaption>
+            <button class="menu-btn is-specimen is-hovered demo-press" type="button" tabindex="-1">
+              <span class="wipe"></span>
+              <span class="face face-ink">
+                <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                <span class="name">About me<span class="cursor"></span></span>
+              </span>
+              <span class="face face-paper">
+                <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                <span class="name">About me<span class="cursor"></span></span>
+              </span>
+            </button>
+          </figure>
+        </div>
+      </section>
+
+      <section class="col" aria-labelledby="live-heading">
+        <h2 id="live-heading">// live menu</h2>
+        <p class="note">Homepage labels. Click a line to commit it.</p>
+        <p class="readout" id="readout">// pointer default · selection about</p>
+        <nav aria-label="Homepage menu">
+          <ul class="menu" id="menu">
+            <li>
+              <button class="menu-btn is-current" type="button" data-id="about" aria-current="true">
+                <span class="wipe"></span>
+                <span class="face face-ink">
+                  <span class="prompt" aria-hidden="true">[<span class="chevron">&gt;</span>]</span>
+                  <span class="name">About me<span class="cursor" aria-hidden="true"></span></span>
+                </span>
+                <span class="face face-paper" aria-hidden="true">
+                  <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                  <span class="name">About me<span class="cursor"></span></span>
+                </span>
+              </button>
+            </li>
+            <li>
+              <button class="menu-btn" type="button" data-id="how-i-build">
+                <span class="wipe"></span>
+                <span class="face face-ink">
+                  <span class="prompt" aria-hidden="true">[<span class="chevron">&gt;</span>]</span>
+                  <span class="name">How I Build Software<sup class="en">EN</sup><span class="cursor" aria-hidden="true"></span></span>
+                </span>
+                <span class="face face-paper" aria-hidden="true">
+                  <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                  <span class="name">How I Build Software<sup class="en">EN</sup><span class="cursor"></span></span>
+                </span>
+              </button>
+            </li>
+            <li>
+              <button class="menu-btn" type="button" data-id="experience">
+                <span class="wipe"></span>
+                <span class="face face-ink">
+                  <span class="prompt" aria-hidden="true">[<span class="chevron">&gt;</span>]</span>
+                  <span class="name">Experience<span class="cursor" aria-hidden="true"></span></span>
+                </span>
+                <span class="face face-paper" aria-hidden="true">
+                  <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                  <span class="name">Experience<span class="cursor"></span></span>
+                </span>
+              </button>
+            </li>
+            <li>
+              <button class="menu-btn" type="button" data-id="expertise">
+                <span class="wipe"></span>
+                <span class="face face-ink">
+                  <span class="prompt" aria-hidden="true">[<span class="chevron">&gt;</span>]</span>
+                  <span class="name">Expertise<span class="cursor" aria-hidden="true"></span></span>
+                </span>
+                <span class="face face-paper" aria-hidden="true">
+                  <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                  <span class="name">Expertise<span class="cursor"></span></span>
+                </span>
+              </button>
+            </li>
+            <li>
+              <button class="menu-btn" type="button" data-id="contact">
+                <span class="wipe"></span>
+                <span class="face face-ink">
+                  <span class="prompt" aria-hidden="true">[<span class="chevron">&gt;</span>]</span>
+                  <span class="name">Contact<span class="cursor" aria-hidden="true"></span></span>
+                </span>
+                <span class="face face-paper" aria-hidden="true">
+                  <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                  <span class="name">Contact<span class="cursor"></span></span>
+                </span>
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var menu = document.getElementById("menu");
+      var readout = document.getElementById("readout");
+      if (!menu || !readout) return;
+
+      var pointer = "default";
+
+      function selection() {
+        var current = menu.querySelector(".is-current");
+        return current ? current.getAttribute("data-id") : "none";
+      }
+
+      function render() {
+        readout.textContent = "// pointer " + pointer + " · selection " + selection();
+      }
+
+      menu.addEventListener("click", function (event) {
+        var button = event.target.closest(".menu-btn");
+        if (!button || !menu.contains(button)) return;
+        var items = menu.querySelectorAll(".menu-btn");
+        for (var i = 0; i < items.length; i++) {
+          var on = items[i] === button;
+          items[i].classList.toggle("is-current", on);
+          if (on) items[i].setAttribute("aria-current", "true");
+          else items[i].removeAttribute("aria-current");
+        }
+        render();
+      });
+
+      menu.addEventListener("pointerover", function (event) {
+        var button = event.target.closest(".menu-btn");
+        if (!button || !menu.contains(button)) return;
+        if (pointer === "pressed") return;
+        pointer = "hovered";
+        render();
+      });
+
+      menu.addEventListener("pointerout", function (event) {
+        var button = event.target.closest(".menu-btn");
+        if (!button || pointer === "pressed") return;
+        var next = event.relatedTarget && event.relatedTarget.closest
+          ? event.relatedTarget.closest(".menu-btn")
+          : null;
+        if (next && menu.contains(next)) return;
+        pointer = "default";
+        render();
+      });
+
+      menu.addEventListener("pointerdown", function (event) {
+        if (!event.target.closest(".menu-btn")) return;
+        pointer = "pressed";
+        render();
+      });
+
+      window.addEventListener("pointerup", function () {
+        if (pointer !== "pressed") return;
+        pointer = menu.matches(":hover") ? "hovered" : "default";
+        render();
+      });
+
+      window.addEventListener("pointercancel", function () {
+        if (pointer !== "pressed") return;
+        pointer = "default";
+        render();
+      });
+
+      menu.addEventListener("keydown", function (event) {
+        if (event.key !== " " && event.key !== "Enter") return;
+        if (!event.target.classList || !event.target.classList.contains("menu-btn")) return;
+        pointer = "pressed";
+        render();
+      });
+
+      menu.addEventListener("keyup", function (event) {
+        if (event.key !== " " && event.key !== "Enter") return;
+        pointer = "default";
+        render();
+      });
+    })();
+  </script>
+</body>
+</html>

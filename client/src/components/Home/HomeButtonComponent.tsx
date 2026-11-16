@@ -1,34 +1,55 @@
+import "./HomeButtonComponent.css";
+
 type HomeButtonProps = {
   label: string;
   anchor: string;
   active: string;
   setActive: (value: string) => void;
   showEnMarker?: boolean;
+  compact?: boolean;
 };
 
-function HomeButtonComponent({ label, anchor, active, setActive, showEnMarker = false } : HomeButtonProps) {
-    const isActive = active === anchor;
+function MenuLabel({ label, showEnMarker }: { label: string; showEnMarker: boolean }) {
+  return (
+    <>
+      <span className="prompt" aria-hidden="true">
+        [<span className="chevron">&gt;</span>]
+      </span>
+      <span className="name">
+        {label}
+        {showEnMarker && <sup className="en">EN</sup>}
+        <span className="cursor" aria-hidden="true" />
+      </span>
+    </>
+  );
+}
 
-    return (
-        <a href={`#${anchor}`} onClick={() => setActive(anchor)}>
-            <div className={`border border-emerald-400 p-6 me-6 mt-6 group transition duration-100 hover:bg-emerald-400 ${isActive ? "bg-emerald-400" : ""}`}>
-                <li className="text-center">
-                    <span className={`text-3xl font-mono ${isActive ? "font-bold text-gray-900" : "text-gray-200"}`}>
-                        [] {label}
-                        {showEnMarker && (
-                            <span
-                                className={`ml-2 text-xs align-super font-bold tracking-wide ${
-                                    isActive ? "text-gray-800" : "text-emerald-400"
-                                }`}
-                            >
-                                EN
-                            </span>
-                        )}
-                    </span>
-                </li>
-            </div>
-        </a>
-    );
+function HomeButtonComponent({
+  label,
+  anchor,
+  active,
+  setActive,
+  showEnMarker = false,
+  compact = false,
+}: HomeButtonProps) {
+  const isActive = active === anchor;
+
+  return (
+    <a
+      href={`#${anchor}`}
+      onClick={() => setActive(anchor)}
+      className={`menu-btn${isActive ? " is-current" : ""}${compact ? " menu-btn--compact" : ""}`}
+      aria-current={isActive ? "true" : undefined}
+    >
+      <span className="wipe" />
+      <span className="face face-ink">
+        <MenuLabel label={label} showEnMarker={showEnMarker} />
+      </span>
+      <span className="face face-paper" aria-hidden="true">
+        <MenuLabel label={label} showEnMarker={showEnMarker} />
+      </span>
+    </a>
+  );
 }
 
 export default HomeButtonComponent;

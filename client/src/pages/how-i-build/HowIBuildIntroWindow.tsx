@@ -1,6 +1,18 @@
+import "./HowIBuildIntroWindow.css";
+
 type HowIBuildIntroWindowProps = {
   onExplore: () => void;
 };
+
+function ExploreLabel() {
+  return (
+    <span className="label">
+      <span className="prompt" aria-hidden="true">&gt;</span>
+      Explore
+      <span className="cursor" aria-hidden="true" />
+    </span>
+  );
+}
 
 function HowIBuildIntroWindow({ onExplore }: HowIBuildIntroWindowProps) {
   return (
@@ -15,12 +27,14 @@ function HowIBuildIntroWindow({ onExplore }: HowIBuildIntroWindowProps) {
         <p className="text-sm md:text-base text-gray-300 leading-relaxed">
           Introductory window. Content will be added here.
         </p>
-        <button
-          type="button"
-          onClick={onExplore}
-          className="px-3 py-2 border border-emerald-400 text-sm text-gray-200 cursor-pointer hover:bg-emerald-400 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-900 transition-[color,background-color,border-color] duration-200 ease-out"
-        >
-          Explore
+        <button type="button" onClick={onExplore} className="explore-btn">
+          <span className="wipe" />
+          <span className="face face-ink">
+            <ExploreLabel />
+          </span>
+          <span className="face face-paper" aria-hidden="true">
+            <ExploreLabel />
+          </span>
         </button>
       </div>
     </aside>

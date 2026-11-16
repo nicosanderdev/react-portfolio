@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Explore button lab</title>
+  <style>
+    @font-face {
+      font-family: "Share Tech Mono";
+      src: url("../assets/fonts/ShareTechMono-Regular.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --emerald: #34d399;
+      --emerald-deep: #059669;
+      --emerald-flash: #6ee7b7;
+      --ink: #111827;
+      --paper: #e5e7eb;
+      --muted: #9ca3af;
+      --copy: #d1d5db;
+      --frame: #6b7280;
+      --bg: #242424;
+      --wipe: 180ms;
+      --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--emerald);
+      font-family: "Share Tech Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+      font-synthesis: weight;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .shell {
+      width: min(72rem, calc(100% - 2rem));
+      margin: 1.5rem auto 3rem;
+      padding: clamp(0.85rem, 2vw, 1.5rem);
+      border: 1px solid var(--frame);
+      border-radius: 0.25rem;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-bottom: 0.55rem;
+      border-bottom: 1px solid var(--frame);
+      font-size: 0.875rem;
+    }
+
+    h1 {
+      margin: 1.15rem 0 0;
+      color: var(--paper);
+      font-size: 1.35rem;
+      font-weight: 400;
+    }
+
+    .lede,
+    .note,
+    .readout {
+      margin: 0.45rem 0 0;
+      max-width: 40rem;
+      color: var(--muted);
+      font-size: 0.8125rem;
+      line-height: 1.5;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 1.25rem;
+      margin: 1rem 0 0;
+      padding: 0;
+      list-style: none;
+      color: var(--muted);
+      font-size: 0.8125rem;
+    }
+
+    .legend strong { color: var(--emerald); font-weight: 400; }
+
+    .stage {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 2.75rem 3rem;
+      margin-top: 1.75rem;
+    }
+
+    .col { width: min(100%, 28rem); }
+
+    h2 {
+      margin: 0;
+      color: var(--paper);
+      font-size: 1rem;
+      font-weight: 400;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1.15rem;
+      margin-top: 1.1rem;
+    }
+
+    .specimen { margin: 0; }
+
+    .specimen figcaption {
+      margin: 0 0 0.4rem;
+      color: var(--emerald);
+      font-size: 0.75rem;
+      letter-spacing: 0.04em;
+    }
+
+    .intro {
+      border: 2px solid var(--emerald);
+      text-align: left;
+    }
+
+    .intro-bar {
+      padding: 0.25rem 0.75rem;
+      border-bottom: 1px solid rgb(52 211 153 / 0.4);
+      color: var(--emerald);
+      font-size: 0.75rem;
+    }
+
+    .intro-body { padding: 1rem; }
+
+    .intro-body p {
+      margin: 0 0 0.75rem;
+      color: var(--copy);
+      font-size: 0.875rem;
+      line-height: 1.625;
+    }
+
+    .explore {
+      position: relative;
+      isolation: isolate;
+      display: inline-block;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid var(--emerald);
+      background: transparent;
+      color: var(--paper);
+      font: inherit;
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+      cursor: pointer;
+      user-select: none;
+      appearance: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 80ms ease, box-shadow 80ms ease, border-color 80ms ease;
+    }
+
+    .explore.is-specimen {
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .explore:focus { outline: none; }
+
+    .explore:focus-visible {
+      outline: 2px solid var(--emerald);
+      outline-offset: 2px;
+    }
+
+    .wipe {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background: var(--emerald);
+      transform: scaleX(0);
+      transform-origin: left center;
+      transition: transform var(--wipe) var(--ease);
+      pointer-events: none;
+    }
+
+    .face {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem 0.75rem;
+      white-space: nowrap;
+    }
+
+    .face-ink {
+      position: relative;
+      z-index: 1;
+      color: var(--ink);
+    }
+
+    .face-paper {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      color: var(--paper);
+      clip-path: inset(0 0 0 0);
+      transition: clip-path var(--wipe) var(--ease);
+      pointer-events: none;
+    }
+
+    .prompt {
+      display: inline-block;
+      max-width: 0;
+      margin-right: 0;
+      overflow: hidden;
+      opacity: 0;
+      vertical-align: bottom;
+      transition: max-width 140ms ease 30ms, margin-right 140ms ease 30ms, opacity 100ms ease 30ms;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 0.55ch;
+      height: 0.9em;
+      margin-left: 0.22ch;
+      background: currentColor;
+      vertical-align: -0.08em;
+      opacity: 0;
+    }
+
+    .explore:hover .wipe,
+    .explore:focus-visible .wipe,
+    .explore.is-hovered .wipe,
+    .explore.is-current .wipe,
+    .explore:active .wipe,
+    .explore.is-pressed .wipe {
+      transform: scaleX(1);
+    }
+
+    .explore:hover .face-paper,
+    .explore:focus-visible .face-paper,
+    .explore.is-hovered .face-paper,
+    .explore.is-current .face-paper,
+    .explore:active .face-paper,
+    .explore.is-pressed .face-paper {
+      clip-path: inset(0 0 0 100%);
+    }
+
+    .explore:hover .prompt,
+    .explore:focus-visible .prompt,
+    .explore.is-hovered .prompt,
+    .explore.is-current .prompt,
+    .explore:active .prompt,
+    .explore.is-pressed .prompt {
+      max-width: 1.2ch;
+      margin-right: 0.4ch;
+      opacity: 1;
+    }
+
+    .explore:hover .cursor,
+    .explore:focus-visible .cursor,
+    .explore.is-hovered .cursor {
+      animation: blink 1.05s steps(1, end) infinite;
+    }
+
+    .explore.is-current { font-weight: 700; }
+
+    .explore.is-current .cursor { opacity: 0; animation: none; }
+
+    .explore.is-current:hover .cursor,
+    .explore.is-current:focus-visible .cursor {
+      animation: blink 1.05s steps(1, end) infinite;
+    }
+
+    .explore:active,
+    .explore.is-pressed {
+      border-color: #047857;
+      transform: translateY(2px) scale(0.98);
+      box-shadow: inset 0 2px 0 rgb(0 0 0 / 0.28);
+    }
+
+    .explore:active .wipe,
+    .explore.is-pressed .wipe { background: var(--emerald-deep); }
+
+    .explore:active .wipe { animation: keystrike 140ms ease forwards; }
+
+    .explore:active .cursor,
+    .explore.is-current:active .cursor,
+    .explore.is-pressed .cursor {
+      opacity: 1;
+      animation: none;
+    }
+
+    .demo-hover .wipe {
+      animation: demo-wipe 2.8s var(--ease) infinite;
+      transition: none;
+    }
+
+    .demo-hover .face-paper {
+      animation: demo-clip 2.8s var(--ease) infinite;
+      transition: none;
+    }
+
+    .demo-hover .prompt {
+      animation: demo-prompt 2.8s ease infinite;
+      transition: none;
+    }
+
+    .demo-hover .cursor { animation: demo-cursor 2.8s linear infinite; }
+
+    .demo-press { animation: press-bump 1.6s ease-in-out infinite; }
+
+    .demo-press .wipe {
+      transform: scaleX(1);
+      animation: press-flash 1.6s ease-in-out infinite;
+      transition: none;
+    }
+
+    .demo-press .cursor { animation: press-cursor 1.6s linear infinite; }
+
+    @keyframes blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    @keyframes keystrike {
+      0% { background-color: var(--emerald-flash); filter: brightness(1.2); }
+      100% { background-color: var(--emerald-deep); filter: none; }
+    }
+
+    @keyframes demo-wipe {
+      0%, 16% { transform: scaleX(0); }
+      38%, 70% { transform: scaleX(1); }
+      92%, 100% { transform: scaleX(0); }
+    }
+
+    @keyframes demo-clip {
+      0%, 16% { clip-path: inset(0 0 0 0); }
+      38%, 70% { clip-path: inset(0 0 0 100%); }
+      92%, 100% { clip-path: inset(0 0 0 0); }
+    }
+
+    @keyframes demo-prompt {
+      0%, 22% { max-width: 0; margin-right: 0; opacity: 0; }
+      42%, 66% { max-width: 1.2ch; margin-right: 0.4ch; opacity: 1; }
+      88%, 100% { max-width: 0; margin-right: 0; opacity: 0; }
+    }
+
+    @keyframes demo-cursor {
+      0%, 14% { opacity: 0; }
+      20%, 30% { opacity: 1; }
+      30.01%, 40% { opacity: 0; }
+      40.01%, 50% { opacity: 1; }
+      50.01%, 60% { opacity: 0; }
+      60.01%, 70% { opacity: 1; }
+      78%, 100% { opacity: 0; }
+    }
+
+    @keyframes press-bump {
+      0%, 42%, 100% {
+        border-color: var(--emerald);
+        transform: none;
+        box-shadow: inset 0 0 0 transparent;
+      }
+      50%, 76% {
+        border-color: #047857;
+        transform: translateY(2px) scale(0.98);
+        box-shadow: inset 0 2px 0 rgb(0 0 0 / 0.28);
+      }
+    }
+
+    @keyframes press-flash {
+      0%, 42%, 100% { background-color: var(--emerald); filter: none; }
+      48% { background-color: var(--emerald-flash); filter: brightness(1.2); }
+      62%, 76% { background-color: var(--emerald-deep); filter: none; }
+    }
+
+    @keyframes press-cursor {
+      0%, 18% { opacity: 1; }
+      18.01%, 36% { opacity: 0; }
+      36.01%, 100% { opacity: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .explore,
+      .explore *,
+      .demo-press { animation: none !important; transition: none !important; }
+
+      .demo-hover .wipe,
+      .demo-press .wipe,
+      .is-hovered .wipe,
+      .is-pressed .wipe,
+      .is-current .wipe { transform: scaleX(1); }
+
+      .demo-hover .face-paper,
+      .demo-press .face-paper,
+      .is-hovered .face-paper,
+      .is-pressed .face-paper,
+      .is-current .face-paper { clip-path: inset(0 0 0 100%); }
+
+      .demo-hover .prompt,
+      .demo-press .prompt,
+      .is-hovered .prompt,
+      .is-pressed .prompt,
+      .is-current .prompt {
+        max-width: 1.2ch;
+        margin-right: 0.4ch;
+        opacity: 1;
+      }
+
+      .demo-hover .cursor,
+      .is-hovered .cursor { opacity: 1; }
+
+      .demo-press,
+      .is-pressed {
+        border-color: #047857;
+        transform: translateY(2px) scale(0.98);
+      }
+
+      .demo-press .wipe,
+      .is-pressed .wipe { background: var(--emerald-deep); }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <span>// button lab</span>
+      <span>~/portfolio/how-i-build</span>
+    </header>
+
+    <h1>Explore button</h1>
+    <p class="lede">The button in the How I Build intro window. Same size and emerald outline. Hover selects the label and types a prompt. Press strikes the key.</p>
+
+    <ul class="legend">
+      <li><strong>Default</strong> outline, the word alone</li>
+      <li><strong>Hovered</strong> selection wipe, prompt types, cursor blinks</li>
+      <li><strong>Pressed</strong> sinks, flashes, cursor locks</li>
+      <li><strong>Active</strong> fill stays, bold, prompt stays</li>
+    </ul>
+
+    <div class="stage">
+      <section class="col" aria-labelledby="states-heading">
+        <h2 id="states-heading">// states</h2>
+        <p class="note">Held still, at the real button size.</p>
+        <div class="stack">
+          <figure class="specimen" aria-hidden="true">
+            <figcaption>Default</figcaption>
+            <button class="explore is-specimen" type="button" tabindex="-1">
+              <span class="wipe"></span>
+              <span class="face face-ink"><span class="label"><span class="prompt">&gt;</span>Explore<span class="cursor"></span></span></span>
+              <span class="face face-paper"><span class="label"><span class="prompt">&gt;</span>Explore<span class="cursor"></span></span></span>
+            </button>
+          </figure>
+          <figure class="specimen" aria-hidden="true">
+            <figcaption>Active</figcaption>
+            <button class="explore is-specimen is-current" type="button" tabindex="-1">
+              <span class="wipe"></span>
+              <span class="face face-ink"><span class="label"><span class="prompt">&gt;</span>Explore<span class="cursor"></span></span></span>
+              <span class="face face-paper"><span class="label"><span class="prompt">&gt;</span>Explore<span class="cursor"></span></span></span>
+            </button>
+          </figure>
+          <figure class="specimen" aria-hidden="true">
+            <figcaption>Hovered</figcaption>
+            <button class="explore is-specimen is-hovered" type="button" tabindex="-1">
+              <span class="wipe"></span>
+              <span class="face face-ink"><span class="label"><span class="prompt">&gt;</span>Explore<span class="cursor"></span></span></span>
+              <span class="face face-paper"><span class="label"><span class="prompt">&gt;</span>Explore<span class="cursor"></span></span></span>
+            </button>
+          </figure>
+          <figure class="specimen" aria-hidden="true">
+            <figcaption>Pressed</figcaption>
+            <button class="explore is-specimen is-hovered is-pressed" type="button" tabindex="-1">
+              <span class="wipe"></span>
+              <span class="face face-ink"><span class="label"><span class="prompt">&gt;</span>Explore<span class="cursor"></span></span></span>
+              <span class="face face-paper"><span class="label"><span class="prompt">&gt;</span>Explore<span class="cursor"></span></span></span>
+            </button>
+          </figure>
+        </div>
+      </section>
+
+      <section class="col" aria-labelledby="motion-heading">
+        <h2 id="motion-heading">// motion</h2>
+        <p class="note">Hover types the prompt and selects the word. Press strikes it.</p>
+        <div class="stack">
+          <figure class="specimen" aria-hidden="true">
+            <figcaption>Hover</figcaption>
+            <button class="explore is-specimen demo-hover" type="button" tabindex="-1">
+              <span class="wipe"></span>
+              <span class="face face-ink"><span class="label"><span class="prompt">&gt;</span>Explore<span class="cursor"></span></span></span>
+              <span class="face face-paper"><span class="label"><span class="prompt">&gt;</span>Explore<span class="cursor"></span></span></span>
+            </button>
+          </figure>
+          <figure class="specimen" aria-hidden="true">
+            <figcaption>Pressed</figcaption>
+            <button class="explore is-specimen is-hovered demo-press" type="button" tabindex="-1">
+              <span class="wipe"></span>
+              <span class="face face-ink"><span class="label"><span class="prompt">&gt;</span>Explore<span class="cursor"></span></span></span>
+              <span class="face face-paper"><span class="label"><span class="prompt">&gt;</span>Explore<span class="cursor"></span></span></span>
+            </button>
+          </figure>
+        </div>
+      </section>
+
+      <section class="col" aria-labelledby="live-heading">
+        <h2 id="live-heading">// live window</h2>
+        <p class="note">Click Explore to commit it. Click again to clear it.</p>
+        <p class="readout" id="readout">// pointer default · explore idle</p>
+        <div class="intro" style="margin-top: 1.1rem">
+          <div class="intro-bar">// intro</div>
+          <div class="intro-body">
+            <p>Introductory window. Content will be added here.</p>
+            <button class="explore" id="explore" type="button" aria-pressed="false">
+              <span class="wipe"></span>
+              <span class="face face-ink"><span class="label"><span class="prompt" aria-hidden="true">&gt;</span>Explore<span class="cursor" aria-hidden="true"></span></span></span>
+              <span class="face face-paper" aria-hidden="true"><span class="label"><span class="prompt">&gt;</span>Explore<span class="cursor"></span></span></span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var button = document.getElementById("explore");
+      var readout = document.getElementById("readout");
+      if (!button || !readout) return;
+
+      var pointer = "default";
+
+      function render() {
+        var open = button.classList.contains("is-current");
+        readout.textContent = "// pointer " + pointer + " · explore " + (open ? "active" : "idle");
+      }
+
+      button.addEventListener("click", function () {
+        var on = !button.classList.contains("is-current");
+        button.classList.toggle("is-current", on);
+        button.setAttribute("aria-pressed", on ? "true" : "false");
+        render();
+      });
+
+      button.addEventListener("pointerover", function () {
+        if (pointer === "pressed") return;
+        pointer = "hovered";
+        render();
+      });
+
+      button.addEventListener("pointerout", function () {
+        if (pointer === "pressed") return;
+        pointer = "default";
+        render();
+      });
+
+      button.addEventListener("pointerdown", function () {
+        pointer = "pressed";
+        render();
+      });
+
+      window.addEventListener("pointerup", function () {
+        if (pointer !== "pressed") return;
+        pointer = button.matches(":hover") ? "hovered" : "default";
+        render();
+      });
+
+      window.addEventListener("pointercancel", function () {
+        if (pointer !== "pressed") return;
+        pointer = "default";
+        render();
+      });
+    })();
+  </script>
+</body>
+</html>

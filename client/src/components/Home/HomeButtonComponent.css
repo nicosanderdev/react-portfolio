@@ -1,0 +1,262 @@
+.menu-btn {
+  --emerald: #34d399;
+  --emerald-deep: #059669;
+  --emerald-flash: #6ee7b7;
+  --ink: #111827;
+  --ink-soft: #1f2937;
+  --paper: #e5e7eb;
+  --wipe-ms: 180ms;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  position: relative;
+  isolation: isolate;
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--emerald);
+  border-radius: 0;
+  background: transparent;
+  color: var(--paper);
+  font: inherit;
+  font-size: 1.875rem;
+  font-weight: 400;
+  font-synthesis: weight;
+  line-height: 2.25rem;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 80ms ease, box-shadow 80ms ease, border-color 80ms ease;
+}
+
+.menu-btn:hover,
+.menu-btn:focus {
+  color: var(--paper);
+  border-color: var(--emerald);
+  background: transparent;
+  text-decoration: none;
+}
+
+.menu-btn:focus {
+  outline: none;
+}
+
+.menu-btn:focus-visible {
+  outline: 2px solid var(--emerald);
+  outline-offset: 3px;
+}
+
+.menu-btn .wipe {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--emerald);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--wipe-ms) var(--ease);
+  pointer-events: none;
+}
+
+.menu-btn .face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1ch;
+  padding: 1.5rem;
+}
+
+.menu-btn .face-ink {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  color: var(--ink);
+}
+
+.menu-btn .face-paper {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  color: var(--paper);
+  clip-path: inset(0 0 0 0);
+  transition: clip-path var(--wipe-ms) var(--ease);
+  pointer-events: none;
+}
+
+.menu-btn .prompt {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.menu-btn .chevron {
+  display: inline-block;
+  max-width: 0;
+  overflow: hidden;
+  vertical-align: bottom;
+  transition: max-width 140ms ease 40ms;
+}
+
+.menu-btn .name {
+  min-width: 0;
+  text-align: center;
+}
+
+.menu-btn .en {
+  margin-left: 0.35rem;
+  color: var(--emerald);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  line-height: 0;
+  vertical-align: super;
+}
+
+.menu-btn .face-ink .en {
+  color: var(--ink-soft);
+}
+
+.menu-btn .cursor {
+  display: inline-block;
+  width: 0.62ch;
+  height: 1.05em;
+  margin-left: 0.28ch;
+  background: currentColor;
+  vertical-align: -0.12em;
+  opacity: 0;
+}
+
+.menu-btn:hover .wipe,
+.menu-btn:focus-visible .wipe,
+.menu-btn.is-current .wipe,
+.menu-btn:active .wipe {
+  transform: scaleX(1);
+}
+
+.menu-btn:hover .face-paper,
+.menu-btn:focus-visible .face-paper,
+.menu-btn.is-current .face-paper,
+.menu-btn:active .face-paper {
+  clip-path: inset(0 0 0 100%);
+}
+
+.menu-btn:hover .chevron,
+.menu-btn:focus-visible .chevron,
+.menu-btn.is-current .chevron,
+.menu-btn:active .chevron {
+  max-width: 1.15ch;
+}
+
+.menu-btn:hover .cursor,
+.menu-btn:focus-visible .cursor {
+  animation: menu-btn-blink 1.05s steps(1, end) infinite;
+}
+
+.menu-btn.is-current {
+  font-weight: 700;
+}
+
+.menu-btn.is-current .cursor {
+  opacity: 0;
+  animation: none;
+}
+
+.menu-btn.is-current:hover .cursor,
+.menu-btn.is-current:focus-visible .cursor {
+  animation: menu-btn-blink 1.05s steps(1, end) infinite;
+}
+
+.menu-btn:active {
+  border-color: #047857;
+  transform: translateY(3px) scale(0.985);
+  box-shadow: inset 0 3px 0 rgb(0 0 0 / 0.28);
+}
+
+.menu-btn:active .wipe {
+  background: var(--emerald-deep);
+  animation: menu-btn-keystrike 140ms ease forwards;
+}
+
+.menu-btn:active .cursor,
+.menu-btn.is-current:active .cursor {
+  opacity: 1;
+  animation: none;
+}
+
+.menu-btn--compact {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  font-size: 1.05rem;
+  line-height: 1.35rem;
+}
+
+.menu-btn--compact .face-ink {
+  flex: 1 1 auto;
+}
+
+.menu-btn--compact .face {
+  gap: 0.4ch;
+  padding: 0.7rem 0.45rem;
+}
+
+.menu-btn--compact .en {
+  margin-left: 0.2rem;
+  font-size: 0.6rem;
+}
+
+@keyframes menu-btn-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@keyframes menu-btn-keystrike {
+  0% { background-color: var(--emerald-flash); filter: brightness(1.2); }
+  100% { background-color: var(--emerald-deep); filter: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-btn,
+  .menu-btn * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .menu-btn:hover .wipe,
+  .menu-btn:focus-visible .wipe,
+  .menu-btn.is-current .wipe,
+  .menu-btn:active .wipe {
+    transform: scaleX(1);
+  }
+
+  .menu-btn:hover .face-paper,
+  .menu-btn:focus-visible .face-paper,
+  .menu-btn.is-current .face-paper,
+  .menu-btn:active .face-paper {
+    clip-path: inset(0 0 0 100%);
+  }
+
+  .menu-btn:hover .chevron,
+  .menu-btn:focus-visible .chevron,
+  .menu-btn.is-current .chevron,
+  .menu-btn:active .chevron {
+    max-width: 1.15ch;
+  }
+
+  .menu-btn:hover .cursor,
+  .menu-btn:focus-visible .cursor {
+    opacity: 1;
+  }
+
+  .menu-btn:active {
+    border-color: #047857;
+    transform: translateY(3px) scale(0.985);
+    box-shadow: inset 0 3px 0 rgb(0 0 0 / 0.28);
+  }
+
+  .menu-btn:active .wipe {
+    background: var(--emerald-deep);
+  }
+}

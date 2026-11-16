@@ -60,35 +60,20 @@ export default function Homepage() {
                         aria-hidden={isExpanded}
                     >
                         {/** Menu - Mobile*/}
-                        <nav>
-                            <ul className="">
-                                <div className="grid grid-cols-2 mt-4 gap-y-2">
-                                    {PORTFOLIO_SECTIONS.map((section) => {
-                                        const showEnMarker = Boolean(section.englishOnly) && isNonEnglish;
-                                        return (
-                                        <li key={section.id} className="text-center">
-                                            <a
-                                                href={`#${section.anchor}`}
-                                                onClick={() => setActive(section.id)}
-                                            >
-                                                <span className={`text-xl font-mono ${active === section.id ? "text-gray-900 bg-emerald-400 font-bold" : "text-gray-200"
-                                                    }`}>
-                                                    [] {t(section.menuKey)}
-                                                    {showEnMarker && (
-                                                        <span
-                                                            className={`ml-1 text-xs align-super font-bold tracking-wide ${
-                                                                active === section.id ? "text-gray-800" : "text-emerald-400"
-                                                            }`}
-                                                        >
-                                                            EN
-                                                        </span>
-                                                    )}
-                                                </span>
-                                            </a>
-                                        </li>
-                                        );
-                                    })}
-                                </div>
+                        <nav aria-label="Homepage menu">
+                            <ul className="grid grid-cols-2 mx-0 mb-0 mt-4 gap-2 list-none p-0">
+                                {PORTFOLIO_SECTIONS.map((section) => (
+                                    <li key={section.id}>
+                                        <HomeButtonComponent
+                                            label={t(section.menuKey)}
+                                            anchor={section.anchor}
+                                            active={active}
+                                            setActive={(value) => setActive(value as PortfolioSectionId)}
+                                            showEnMarker={Boolean(section.englishOnly) && isNonEnglish}
+                                            compact
+                                        />
+                                    </li>
+                                ))}
                             </ul>
                         </nav>
                     </div>
@@ -101,22 +86,20 @@ export default function Homepage() {
                         }`}
                         aria-hidden={isExpanded}
                     >
-                        {/** Menu - Desktop10*/}
-                        <nav>
-                            <ul className="">
-                                
-                                <div className="flex flex-col">
-                                    {PORTFOLIO_SECTIONS.map((section) => (
+                        {/** Menu - Desktop */}
+                        <nav aria-label="Homepage menu">
+                            <ul className="flex flex-col gap-6 pe-6 mx-0 mb-0 mt-6 list-none p-0">
+                                {PORTFOLIO_SECTIONS.map((section) => (
+                                    <li key={section.id}>
                                         <HomeButtonComponent
-                                            key={section.id}
                                             label={t(section.menuKey)}
                                             anchor={section.anchor}
                                             active={active}
                                             setActive={(value) => setActive(value as PortfolioSectionId)}
                                             showEnMarker={Boolean(section.englishOnly) && isNonEnglish}
                                         />
-                                    ))}
-                                </div>
+                                    </li>
+                                ))}
                             </ul>
                         </nav>
 
