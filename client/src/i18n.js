@@ -11,10 +11,12 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
     en: {
       translation: {
         menu_about: "About me",
+        menu_how_i_build: "How I Build Software",
         menu_expertise: "Expertise",
         menu_experience: "Experience",
         menu_contact: "Contact",
         header_about: "about me",
+        header_how_i_build: "how I build software",
         header_expertise: "expertise",
         header_experience: "experience",
         header_contact: "contact",
@@ -91,10 +93,12 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
     es: {
       translation: {
         menu_about: "Sobre mí",
+        menu_how_i_build: "How I Build Software",
         menu_expertise: "Habilidades",
         menu_experience: "Experiencia",
         menu_contact: "Contacto",
         header_about: "sobre mí",
+        header_how_i_build: "how I build software",
         header_expertise: "habilidades",
         header_experience: "experiencia",
         header_contact: "contacto",
@@ -171,10 +175,12 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
     pt: {
       translation: {
         menu_about: "Sobre mim",
+        menu_how_i_build: "How I Build Software",
         menu_expertise: "Habilidades",
         menu_experience: "Experiência",
         menu_contact: "Contato",
         header_about: "sobre mim",
+        header_how_i_build: "how I build software",
         header_expertise: "habilidades",
         header_experience: "experiência",
         header_contact: "contato",
