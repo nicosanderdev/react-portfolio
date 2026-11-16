@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Homepage boot lab</title>
+  <style>
+    @font-face {
+      font-family: "Share Tech Mono";
+      src: url("../assets/fonts/ShareTechMono-Regular.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --emerald: #34d399;
+      --emerald-deep: #059669;
+      --emerald-flash: #6ee7b7;
+      --emerald-press: #10b981;
+      --ink: #111827;
+      --ink-soft: #1f2937;
+      --paper: #e5e7eb;
+      --muted: #9ca3af;
+      --copy: #d1d5db;
+      --frame: #6b7280;
+      --bg: #242424;
+      --white: #ffffff;
+      --wipe-ms: 180ms;
+      --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+      --boot-step: 110ms;
+      --boot-dur: 320ms;
+      --content-wipe: 420ms;
+      --type-ms: 28ms;
+      --scan-black-ms: 500ms;
+      --scan-tease-ms: 1800ms;
+      --scan-hold-ms: 1000ms;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--emerald);
+      font-family: "Share Tech Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+      font-synthesis: weight;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .shell {
+      width: min(92rem, calc(100% - 2rem));
+      margin: 1.5rem auto 3rem;
+      padding: clamp(0.85rem, 2vw, 1.5rem);
+      border: 1px solid var(--frame);
+      border-radius: 0.25rem;
+    }
+
+    .lab-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-bottom: 0.55rem;
+      border-bottom: 1px solid var(--frame);
+      font-size: 0.875rem;
+    }
+
+    h1 {
+      margin: 1.15rem 0 0;
+      color: var(--paper);
+      font-size: 1.35rem;
+      font-weight: 400;
+    }
+
+    .lede {
+      margin: 0.45rem 0 0;
+      max-width: 48rem;
+      color: var(--muted);
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+
+    /* ---- Lab controls ---- */
+    .lab-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem 1.25rem;
+      margin: 1.15rem 0 0;
+      padding: 0.7rem 0.85rem;
+      border: 1px solid var(--frame);
+      background: rgb(0 0 0 / 0.18);
+    }
+
+    .variants {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .variants label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.7rem;
+      border: 1px solid var(--frame);
+      color: var(--copy);
+      font-size: 0.8125rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .variants label:has(input:checked) {
+      border-color: var(--emerald);
+      color: var(--emerald);
+      background: rgb(52 211 153 / 0.08);
+    }
+
+    .variants input {
+      accent-color: var(--emerald);
+    }
+
+    .replay {
+      appearance: none;
+      border: 1px solid var(--emerald);
+      background: transparent;
+      color: var(--emerald);
+      font: inherit;
+      font-size: 0.8125rem;
+      padding: 0.4rem 0.85rem;
+      cursor: pointer;
+    }
+
+    .replay:hover,
+    .replay:focus-visible {
+      background: var(--emerald);
+      color: var(--ink);
+      outline: none;
+    }
+
+    .scroll-hint {
+      margin: 0.55rem 0 0;
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+
+    /* ---- Homepage replica (desktop fixed) ---- */
+    .viewport {
+      margin-top: 1rem;
+      overflow-x: auto;
+      padding-bottom: 0.35rem;
+    }
+
+    .replica {
+      --region-dur: var(--boot-dur);
+      position: relative;
+      width: 1400px;
+      min-width: 1400px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      border: 1px solid var(--frame);
+      border-radius: 0.25rem;
+      box-shadow: 0 10px 25px rgb(0 0 0 / 0.25);
+      color: var(--emerald);
+      overflow: hidden;
+    }
+
+    .scan-beam {
+      display: none;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: -2px;
+      height: 2px;
+      z-index: 20;
+      pointer-events: none;
+      background: linear-gradient(90deg, transparent, var(--emerald-flash), transparent);
+      box-shadow: 0 0 12px var(--emerald), 0 0 28px rgb(52 211 153 / 0.45);
+    }
+
+    .content-col {
+      position: relative;
+    }
+
+    .hp-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--frame);
+      font-size: 0.875rem;
+    }
+
+    .lang-stub {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      border: 1px solid var(--frame);
+      padding: 0.25rem 0.55rem;
+      color: var(--copy);
+    }
+
+    .lang-stub .chev {
+      color: var(--muted);
+      font-size: 0.7rem;
+    }
+
+    .path {
+      color: var(--copy);
+      white-space: nowrap;
+    }
+
+    .path .caret {
+      display: inline-block;
+      width: 0.6ch;
+      height: 1em;
+      margin-left: 0.15ch;
+      background: var(--copy);
+      vertical-align: -0.1em;
+      opacity: 0;
+    }
+
+    .path.is-typing .caret {
+      opacity: 1;
+      animation: caret-blink 1.05s steps(1, end) infinite;
+    }
+
+    .inner {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      border: 2px solid var(--frame);
+    }
+
+    .nameplate {
+      background: var(--emerald);
+      color: var(--ink);
+      text-align: center;
+      padding: 0.5rem;
+      font-size: 1.875rem;
+    }
+
+    .columns {
+      display: flex;
+      gap: 0;
+      margin-top: 0;
+      min-height: 34rem;
+    }
+
+    .menu-col {
+      width: 40%;
+      flex: 0 0 40%;
+      padding-right: 1.5rem;
+      padding-top: 1.5rem;
+    }
+
+    .menu-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .content-col {
+      width: 60%;
+      flex: 1 1 60%;
+      min-width: 0;
+      padding-top: 0.35rem;
+      overflow: hidden;
+    }
+
+    .section-title {
+      border: 2px solid var(--emerald);
+      padding: 0.5rem;
+      margin-top: 1.5rem;
+      text-align: center;
+      color: var(--paper);
+      font-size: 1.875rem;
+    }
+
+    .content-pane {
+      border: 2px solid var(--emerald);
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+      min-height: 22rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pane {
+      display: none;
+      gap: 0.75rem;
+      text-align: left;
+    }
+
+    .pane.is-active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .block {
+      border: 1px solid rgb(52 211 153 / 0.35);
+      background: rgb(52 211 153 / 0.05);
+      color: var(--muted);
+      font-size: 0.8125rem;
+      line-height: 1.4;
+      padding: 0.7rem 0.85rem;
+    }
+
+    .block strong {
+      display: block;
+      color: var(--emerald);
+      font-weight: 400;
+      margin-bottom: 0.25rem;
+    }
+
+    .pane-about .portrait {
+      width: 7rem;
+      height: 7rem;
+      margin: 0 auto 0.75rem;
+      border: 2px solid var(--emerald);
+      background: rgb(52 211 153 / 0.12);
+    }
+
+    .pane-about .stack-lines {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .pane-about .line {
+      height: 0.65rem;
+      background: rgb(229 231 235 / 0.18);
+      border-radius: 1px;
+    }
+
+    .pane-about .line:nth-child(1) { width: 88%; }
+    .pane-about .line:nth-child(2) { width: 72%; }
+    .pane-about .line:nth-child(3) { width: 80%; }
+    .pane-about .line:nth-child(4) { width: 55%; }
+
+    .pane-how {
+      display: none;
+      flex-direction: row;
+      gap: 0.75rem;
+    }
+
+    .pane-how.is-active { display: flex; }
+
+    .pane-how .panel {
+      flex: 1;
+      min-height: 10rem;
+    }
+
+    .pane-experience .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+      position: relative;
+      padding-left: 1.1rem;
+    }
+
+    .pane-experience .timeline::before {
+      content: "";
+      position: absolute;
+      left: 0.25rem;
+      top: 0.35rem;
+      bottom: 0.35rem;
+      width: 2px;
+      background: rgb(52 211 153 / 0.45);
+    }
+
+    .pane-experience .node {
+      position: relative;
+    }
+
+    .pane-experience .node::before {
+      content: "";
+      position: absolute;
+      left: -1.05rem;
+      top: 0.55rem;
+      width: 0.55rem;
+      height: 0.55rem;
+      border-radius: 50%;
+      background: var(--emerald);
+    }
+
+    .pane-expertise {
+      display: none;
+      flex-direction: row;
+      gap: 0.75rem;
+    }
+
+    .pane-expertise.is-active { display: flex; }
+
+    .pane-expertise .col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+
+    .pane-contact .field {
+      height: 2.1rem;
+      border: 1px solid rgb(52 211 153 / 0.4);
+      background: rgb(0 0 0 / 0.2);
+      margin-bottom: 0.55rem;
+    }
+
+    .pane-contact .area {
+      height: 5.5rem;
+    }
+
+    .pane-contact .submit {
+      width: 8rem;
+      height: 2.25rem;
+      margin-top: 0.35rem;
+      border: 1px solid var(--emerald);
+      background: rgb(52 211 153 / 0.15);
+    }
+
+    /* ---- Directory stub ---- */
+    .dir-wrap {
+      padding: 1rem;
+      margin-left: 1rem;
+      width: 100%;
+    }
+
+    .dir-heading {
+      color: var(--white);
+      margin: 0 0 0.5rem;
+      font-size: 1.25rem;
+    }
+
+    .dir-tree,
+    .dir-tree ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .dir-tree > li { margin-left: 16px; }
+    .dir-tree ul > li { margin-left: 20px; }
+
+    .dir-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      max-width: 100%;
+      margin: 0;
+      padding: 0.12rem 0;
+      border: 0;
+      background: none;
+      color: var(--white);
+      font: inherit;
+      font-size: 1.25rem;
+      line-height: 1.75rem;
+      text-decoration: none;
+      cursor: default;
+      user-select: none;
+    }
+
+    .dir-icon {
+      width: 1.5rem;
+      height: 1.5rem;
+      flex: 0 0 auto;
+      overflow: visible;
+      color: var(--emerald);
+    }
+
+    .dir-icon-folder .body,
+    .dir-icon-folder .lid {
+      fill: currentColor;
+      stroke: none;
+    }
+
+    .dir-icon-folder .sheet {
+      fill: #022c22;
+      stroke: none;
+      opacity: 0;
+    }
+
+    .dir-icon-file .dir-outline,
+    .dir-icon-file .lines {
+      fill: none;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+    }
+
+    .dir-icon-file .dir-outline {
+      stroke: currentColor;
+      stroke-width: 2;
+    }
+
+    .dir-icon-file .lines {
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-dasharray: 100;
+      stroke-dashoffset: 100;
+      opacity: 0;
+    }
+
+    .dir-name { color: inherit; }
+
+    /* ---- Console stub ---- */
+    .console-stub {
+      display: flex;
+      gap: 10px;
+      margin-top: 1rem;
+      padding-right: 15px;
+    }
+
+    .pulse-graph {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .lights {
+      display: flex;
+      padding: 0 8px;
+      gap: 10px;
+    }
+
+    .light {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: transparent;
+      border: 2px solid var(--emerald);
+    }
+
+    .light.is-on { background: var(--emerald); }
+
+    .trace {
+      height: 90px;
+      margin-top: 6px;
+      border: 1px solid rgb(52 211 153 / 0.35);
+      background:
+        linear-gradient(180deg, transparent 48%, rgb(52 211 153 / 0.2) 50%, transparent 52%),
+        repeating-linear-gradient(
+          90deg,
+          transparent 0,
+          transparent 18px,
+          rgb(52 211 153 / 0.08) 18px,
+          rgb(52 211 153 / 0.08) 19px
+        );
+      position: relative;
+      overflow: hidden;
+    }
+
+    .trace::after {
+      content: "";
+      position: absolute;
+      inset: 35% 8% auto;
+      height: 2px;
+      background: var(--emerald);
+      opacity: 0.85;
+      clip-path: polygon(0 0, 12% 100%, 28% 20%, 45% 80%, 62% 10%, 78% 70%, 100% 40%, 100% 0);
+    }
+
+    .side-bars {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      gap: 6px;
+      width: 40px;
+      transform: rotate(0.5turn);
+    }
+
+    .bar {
+      width: 100%;
+      background: var(--emerald);
+    }
+
+    .bar:nth-child(1) { height: 42%; }
+    .bar:nth-child(2) { height: 68%; }
+
+    .squares {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    .square {
+      width: 20px;
+      height: 10px;
+      border: 2px solid var(--emerald);
+      background: transparent;
+    }
+
+    .square.is-on { background: var(--emerald); }
+
+    /* ---- Menu buttons (from HomeButtonComponent.css) ---- */
+    .menu-btn {
+      position: relative;
+      isolation: isolate;
+      display: block;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid var(--emerald);
+      border-radius: 0;
+      background: transparent;
+      color: var(--paper);
+      font: inherit;
+      font-size: 1.875rem;
+      font-weight: 400;
+      font-synthesis: weight;
+      line-height: 2.25rem;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      user-select: none;
+      appearance: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 80ms ease, box-shadow 80ms ease, border-color 80ms ease;
+    }
+
+    .menu-btn:hover,
+    .menu-btn:focus {
+      color: var(--paper);
+      border-color: var(--emerald);
+      background: transparent;
+      text-decoration: none;
+    }
+
+    .menu-btn:focus { outline: none; }
+
+    .menu-btn:focus-visible {
+      outline: 2px solid var(--emerald);
+      outline-offset: 3px;
+    }
+
+    .menu-btn .wipe {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background: var(--emerald);
+      transform: scaleX(0);
+      transform-origin: left center;
+      transition: transform var(--wipe-ms) var(--ease);
+      pointer-events: none;
+    }
+
+    .menu-btn .face {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1ch;
+      padding: 1.5rem;
+    }
+
+    .menu-btn .face-ink {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      color: var(--ink);
+    }
+
+    .menu-btn .face-paper {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      color: var(--paper);
+      clip-path: inset(0 0 0 0);
+      transition: clip-path var(--wipe-ms) var(--ease);
+      pointer-events: none;
+    }
+
+    .menu-btn .prompt {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    .menu-btn .chevron {
+      display: inline-block;
+      max-width: 0;
+      overflow: hidden;
+      vertical-align: bottom;
+      transition: max-width 140ms ease 40ms;
+    }
+
+    .menu-btn .name {
+      min-width: 0;
+      text-align: center;
+    }
+
+    .menu-btn .en {
+      margin-left: 0.35rem;
+      color: var(--emerald);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.025em;
+      line-height: 0;
+      vertical-align: super;
+    }
+
+    .menu-btn .face-ink .en { color: var(--ink-soft); }
+
+    .menu-btn .cursor {
+      display: inline-block;
+      width: 0.62ch;
+      height: 1.05em;
+      margin-left: 0.28ch;
+      background: currentColor;
+      vertical-align: -0.12em;
+      opacity: 0;
+    }
+
+    .menu-btn:hover .wipe,
+    .menu-btn:focus-visible .wipe,
+    .menu-btn.is-current .wipe,
+    .menu-btn:active .wipe {
+      transform: scaleX(1);
+    }
+
+    .menu-btn:hover .face-paper,
+    .menu-btn:focus-visible .face-paper,
+    .menu-btn.is-current .face-paper,
+    .menu-btn:active .face-paper {
+      clip-path: inset(0 0 0 100%);
+    }
+
+    .menu-btn:hover .chevron,
+    .menu-btn:focus-visible .chevron,
+    .menu-btn.is-current .chevron,
+    .menu-btn:active .chevron {
+      max-width: 1.15ch;
+    }
+
+    .menu-btn:hover .cursor,
+    .menu-btn:focus-visible .cursor {
+      animation: menu-btn-blink 1.05s steps(1, end) infinite;
+    }
+
+    .menu-btn.is-current { font-weight: 700; }
+
+    .menu-btn.is-current .cursor {
+      opacity: 0;
+      animation: none;
+    }
+
+    .menu-btn.is-current:hover .cursor,
+    .menu-btn.is-current:focus-visible .cursor {
+      animation: menu-btn-blink 1.05s steps(1, end) infinite;
+    }
+
+    .menu-btn:active {
+      border-color: #047857;
+      transform: translateY(3px) scale(0.985);
+      box-shadow: inset 0 3px 0 rgb(0 0 0 / 0.28);
+    }
+
+    .menu-btn:active .wipe {
+      background: var(--emerald-deep);
+      animation: menu-btn-keystrike 140ms ease forwards;
+    }
+
+    .menu-btn:active .cursor,
+    .menu-btn.is-current:active .cursor {
+      opacity: 1;
+      animation: none;
+    }
+
+    /* ---- Boot regions ---- */
+    .boot-region {
+      opacity: 1;
+    }
+
+    /* ===== Variant: Stagger ===== */
+    .replica[data-variant="stagger"].is-booting .boot-region {
+      opacity: 0;
+      clip-path: inset(0 100% 0 0);
+      animation: region-clip-in var(--region-dur) var(--ease) forwards;
+      animation-delay: calc(var(--boot-i, 0) * var(--boot-step));
+    }
+
+    .replica[data-variant="stagger"].is-booting .section-title,
+    .replica[data-variant="stagger"].is-content-animating .section-title {
+      opacity: 0;
+      clip-path: inset(0 100% 0 0);
+      animation: region-clip-in var(--region-dur) var(--ease) forwards;
+      animation-delay: calc(6 * var(--boot-step));
+    }
+
+    .replica[data-variant="stagger"].is-booting .content-pane,
+    .replica[data-variant="stagger"].is-content-animating .content-pane {
+      clip-path: inset(0 100% 0 0);
+      animation: pane-wipe var(--content-wipe) var(--ease) forwards;
+      animation-delay: calc(6 * var(--boot-step) + 80ms);
+    }
+
+    .replica[data-variant="stagger"].is-booting .pane.is-active .block,
+    .replica[data-variant="stagger"].is-content-animating .pane.is-active .block,
+    .replica[data-variant="stagger"].is-booting .pane.is-active .portrait,
+    .replica[data-variant="stagger"].is-content-animating .pane.is-active .portrait,
+    .replica[data-variant="stagger"].is-booting .pane.is-active .line,
+    .replica[data-variant="stagger"].is-content-animating .pane.is-active .line,
+    .replica[data-variant="stagger"].is-booting .pane.is-active .panel,
+    .replica[data-variant="stagger"].is-content-animating .pane.is-active .panel,
+    .replica[data-variant="stagger"].is-booting .pane.is-active .node,
+    .replica[data-variant="stagger"].is-content-animating .pane.is-active .node,
+    .replica[data-variant="stagger"].is-booting .pane.is-active .col,
+    .replica[data-variant="stagger"].is-content-animating .pane.is-active .col,
+    .replica[data-variant="stagger"].is-booting .pane.is-active .field,
+    .replica[data-variant="stagger"].is-content-animating .pane.is-active .field,
+    .replica[data-variant="stagger"].is-booting .pane.is-active .submit,
+    .replica[data-variant="stagger"].is-content-animating .pane.is-active .submit {
+      opacity: 0;
+      transform: translateY(10px);
+      animation: block-rise 280ms var(--ease) forwards;
+      animation-delay: calc(6 * var(--boot-step) + var(--content-wipe) + (var(--rise-i, 0) * 55ms));
+    }
+
+    .replica[data-variant="stagger"].is-content-animating .section-title {
+      animation-delay: 0ms;
+    }
+
+    .replica[data-variant="stagger"].is-content-animating .content-pane {
+      animation-delay: 60ms;
+    }
+
+    .replica[data-variant="stagger"].is-content-animating .pane.is-active .block,
+    .replica[data-variant="stagger"].is-content-animating .pane.is-active .portrait,
+    .replica[data-variant="stagger"].is-content-animating .pane.is-active .line,
+    .replica[data-variant="stagger"].is-content-animating .pane.is-active .panel,
+    .replica[data-variant="stagger"].is-content-animating .pane.is-active .node,
+    .replica[data-variant="stagger"].is-content-animating .pane.is-active .col,
+    .replica[data-variant="stagger"].is-content-animating .pane.is-active .field,
+    .replica[data-variant="stagger"].is-content-animating .pane.is-active .submit {
+      animation-delay: calc(var(--content-wipe) + 40ms + (var(--rise-i, 0) * 55ms));
+    }
+
+    /* ===== Variant: Type-on ===== */
+    .replica[data-variant="type-on"].is-booting .boot-region {
+      opacity: 0;
+      clip-path: inset(0 100% 0 0);
+      animation: region-clip-in var(--region-dur) var(--ease) forwards;
+      animation-delay: calc(var(--boot-i, 0) * var(--boot-step));
+    }
+
+    .replica[data-variant="type-on"] .type-line {
+      overflow: hidden;
+      white-space: nowrap;
+      border-right: 0 solid transparent;
+      max-width: 0;
+      opacity: 0.95;
+    }
+
+    .replica[data-variant="type-on"].is-booting .section-title,
+    .replica[data-variant="type-on"].is-content-animating .section-title {
+      opacity: 0;
+      animation: fade-in 180ms ease forwards;
+      animation-delay: calc(6 * var(--boot-step));
+    }
+
+    .replica[data-variant="type-on"].is-content-animating .section-title {
+      animation-delay: 0ms;
+    }
+
+    .replica[data-variant="type-on"].is-booting .content-pane,
+    .replica[data-variant="type-on"].is-content-animating .content-pane {
+      opacity: 1;
+    }
+
+    .replica[data-variant="type-on"].is-booting .pane.is-active .type-line,
+    .replica[data-variant="type-on"].is-content-animating .pane.is-active .type-line {
+      animation: type-reveal 520ms steps(24, end) forwards;
+      animation-delay: calc(var(--type-i, 0) * 160ms + 80ms);
+    }
+
+    .replica[data-variant="type-on"].is-booting .pane.is-active .type-line {
+      animation-delay: calc(6 * var(--boot-step) + 120ms + (var(--type-i, 0) * 160ms));
+    }
+
+    .replica[data-variant="type-on"].is-booting .pane.is-active .block:not(.type-line),
+    .replica[data-variant="type-on"].is-content-animating .pane.is-active .block:not(.type-line),
+    .replica[data-variant="type-on"].is-booting .pane.is-active .portrait,
+    .replica[data-variant="type-on"].is-content-animating .pane.is-active .portrait,
+    .replica[data-variant="type-on"].is-booting .pane.is-active .panel,
+    .replica[data-variant="type-on"].is-content-animating .pane.is-active .panel,
+    .replica[data-variant="type-on"].is-booting .pane.is-active .node,
+    .replica[data-variant="type-on"].is-content-animating .pane.is-active .node,
+    .replica[data-variant="type-on"].is-booting .pane.is-active .col,
+    .replica[data-variant="type-on"].is-content-animating .pane.is-active .col,
+    .replica[data-variant="type-on"].is-booting .pane.is-active .field,
+    .replica[data-variant="type-on"].is-content-animating .pane.is-active .field,
+    .replica[data-variant="type-on"].is-booting .pane.is-active .submit,
+    .replica[data-variant="type-on"].is-content-animating .pane.is-active .submit {
+      opacity: 0;
+      animation: fade-in 220ms ease forwards;
+      animation-delay: calc(6 * var(--boot-step) + 180ms + (var(--rise-i, 0) * 90ms));
+    }
+
+    .replica[data-variant="type-on"].is-content-animating .pane.is-active .block:not(.type-line),
+    .replica[data-variant="type-on"].is-content-animating .pane.is-active .portrait,
+    .replica[data-variant="type-on"].is-content-animating .pane.is-active .panel,
+    .replica[data-variant="type-on"].is-content-animating .pane.is-active .node,
+    .replica[data-variant="type-on"].is-content-animating .pane.is-active .col,
+    .replica[data-variant="type-on"].is-content-animating .pane.is-active .field,
+    .replica[data-variant="type-on"].is-content-animating .pane.is-active .submit {
+      animation-delay: calc(100ms + (var(--rise-i, 0) * 90ms));
+    }
+
+    /* ===== Variant: Scan ===== */
+    .scan-preamble {
+      display: none;
+      position: absolute;
+      inset: 0;
+      z-index: 30;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: clamp(5.5rem, 18vh, 9rem);
+      background: #000;
+      pointer-events: none;
+    }
+
+    .replica[data-variant="scan"].is-preamble .scan-preamble {
+      display: flex;
+    }
+
+    .replica[data-variant="scan"].is-preamble .boot-region,
+    .replica[data-variant="scan"].is-preamble .section-title,
+    .replica[data-variant="scan"].is-preamble .content-pane {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .preamble-tease {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.85rem;
+      opacity: 0;
+      transform: translateY(14px);
+      color: var(--emerald);
+      text-align: center;
+    }
+
+    .replica[data-variant="scan"].is-preamble.phase-tease .preamble-tease,
+    .replica[data-variant="scan"].is-preamble.phase-hold .preamble-tease {
+      animation: tease-enter var(--scan-tease-ms) var(--ease) forwards;
+    }
+
+    .replica[data-variant="scan"].is-preamble.phase-hold .preamble-tease {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+
+    .tease-prompt {
+      font-size: 0.95rem;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      opacity: 0;
+    }
+
+    .replica[data-variant="scan"].is-preamble.phase-tease .tease-prompt,
+    .replica[data-variant="scan"].is-preamble.phase-hold .tease-prompt {
+      animation: fade-in 700ms ease forwards;
+      animation-delay: 120ms;
+    }
+
+    .replica[data-variant="scan"].is-preamble.phase-hold .tease-prompt {
+      animation: none;
+      opacity: 1;
+    }
+
+    .tease-name {
+      font-size: clamp(1.6rem, 2.4vw, 2.35rem);
+      color: var(--paper);
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    .tease-name .caret {
+      display: inline-block;
+      width: 0.55ch;
+      height: 1em;
+      margin-left: 0.2ch;
+      background: var(--emerald);
+      vertical-align: -0.1em;
+      opacity: 0;
+    }
+
+    .replica[data-variant="scan"].is-preamble.phase-tease .tease-name .caret,
+    .replica[data-variant="scan"].is-preamble.phase-hold .tease-name .caret {
+      animation: caret-blink 1.05s steps(1, end) infinite;
+      animation-delay: 900ms;
+    }
+
+    .tease-rule {
+      width: 0;
+      height: 1px;
+      background: var(--emerald);
+      box-shadow: 0 0 10px rgb(52 211 153 / 0.45);
+    }
+
+    .replica[data-variant="scan"].is-preamble.phase-tease .tease-rule,
+    .replica[data-variant="scan"].is-preamble.phase-hold .tease-rule {
+      animation: tease-rule 1100ms var(--ease) forwards;
+      animation-delay: 420ms;
+    }
+
+    .replica[data-variant="scan"].is-preamble.phase-hold .tease-rule {
+      animation: none;
+      width: 12rem;
+    }
+
+    .tease-sub {
+      font-size: 0.8rem;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: lowercase;
+      opacity: 0;
+    }
+
+    .replica[data-variant="scan"].is-preamble.phase-tease .tease-sub,
+    .replica[data-variant="scan"].is-preamble.phase-hold .tease-sub {
+      animation: fade-in 700ms ease forwards;
+      animation-delay: 900ms;
+    }
+
+    .replica[data-variant="scan"].is-preamble.phase-hold .tease-sub {
+      animation: none;
+      opacity: 1;
+    }
+
+    .replica[data-variant="scan"].is-booting > .scan-beam {
+      display: block;
+      animation: scan-travel 1.15s linear forwards;
+    }
+
+    .replica[data-variant="scan"].is-content-animating .content-col > .scan-beam {
+      display: block;
+      animation: scan-travel 0.55s linear forwards;
+    }
+
+    .replica[data-variant="scan"].is-booting .boot-region {
+      opacity: 0;
+      clip-path: inset(0 0 100% 0);
+      animation: scan-reveal 0.28s var(--ease) forwards;
+      animation-delay: calc(var(--boot-i, 0) * 140ms + 40ms);
+    }
+
+    .replica[data-variant="scan"].is-booting .section-title,
+    .replica[data-variant="scan"].is-content-animating .section-title {
+      opacity: 0;
+      clip-path: inset(0 0 100% 0);
+      animation: scan-reveal 0.28s var(--ease) forwards;
+      animation-delay: calc(6 * 140ms + 40ms);
+    }
+
+    .replica[data-variant="scan"].is-booting .content-pane,
+    .replica[data-variant="scan"].is-content-animating .content-pane {
+      opacity: 0;
+      clip-path: inset(0 0 100% 0);
+      animation: scan-reveal 0.36s var(--ease) forwards;
+      animation-delay: calc(6 * 140ms + 120ms);
+    }
+
+    .replica[data-variant="scan"].is-content-animating .section-title {
+      animation-delay: 40ms;
+    }
+
+    .replica[data-variant="scan"].is-content-animating .content-pane {
+      animation-delay: 90ms;
+    }
+
+    /* Settled / restart helpers */
+    .replica.is-settled .boot-region,
+    .replica.is-settled .section-title,
+    .replica.is-settled .content-pane,
+    .replica.is-settled .pane.is-active .block,
+    .replica.is-settled .pane.is-active .portrait,
+    .replica.is-settled .pane.is-active .line,
+    .replica.is-settled .pane.is-active .panel,
+    .replica.is-settled .pane.is-active .node,
+    .replica.is-settled .pane.is-active .col,
+    .replica.is-settled .pane.is-active .field,
+    .replica.is-settled .pane.is-active .submit,
+    .replica.is-settled .pane.is-active .type-line {
+      opacity: 1;
+      transform: none;
+      clip-path: none;
+      max-width: 100%;
+      animation: none !important;
+    }
+
+    @keyframes region-clip-in {
+      to {
+        opacity: 1;
+        clip-path: inset(0 0 0 0);
+      }
+    }
+
+    @keyframes pane-wipe {
+      from { clip-path: inset(0 100% 0 0); }
+      to { clip-path: inset(0 0 0 0); }
+    }
+
+    @keyframes block-rise {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes type-reveal {
+      from {
+        max-width: 0;
+        opacity: 1;
+      }
+      to {
+        max-width: 100%;
+        opacity: 1;
+      }
+    }
+
+    @keyframes scan-travel {
+      from { top: -2px; opacity: 1; }
+      to { top: calc(100% + 2px); opacity: 0.65; }
+    }
+
+    @keyframes scan-reveal {
+      to {
+        opacity: 1;
+        clip-path: inset(0 0 0 0);
+      }
+    }
+
+    @keyframes tease-enter {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes tease-rule {
+      from { width: 0; }
+      to { width: 12rem; }
+    }
+
+    @keyframes caret-blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    @keyframes menu-btn-blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    @keyframes menu-btn-keystrike {
+      0% { background-color: var(--emerald-flash); filter: brightness(1.2); }
+      100% { background-color: var(--emerald-deep); filter: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .replica.is-booting .boot-region,
+      .replica.is-booting .section-title,
+      .replica.is-booting .content-pane,
+      .replica.is-booting .pane.is-active .block,
+      .replica.is-booting .pane.is-active .portrait,
+      .replica.is-booting .pane.is-active .line,
+      .replica.is-booting .pane.is-active .panel,
+      .replica.is-booting .pane.is-active .node,
+      .replica.is-booting .pane.is-active .col,
+      .replica.is-booting .pane.is-active .field,
+      .replica.is-booting .pane.is-active .submit,
+      .replica.is-booting .pane.is-active .type-line,
+      .replica.is-content-animating .section-title,
+      .replica.is-content-animating .content-pane,
+      .replica.is-content-animating .pane.is-active .block,
+      .replica.is-content-animating .pane.is-active .portrait,
+      .replica.is-content-animating .pane.is-active .line,
+      .replica.is-content-animating .pane.is-active .panel,
+      .replica.is-content-animating .pane.is-active .node,
+      .replica.is-content-animating .pane.is-active .col,
+      .replica.is-content-animating .pane.is-active .field,
+      .replica.is-content-animating .pane.is-active .submit,
+      .replica.is-content-animating .pane.is-active .type-line,
+      .replica .scan-beam,
+      .scan-preamble,
+      .preamble-tease,
+      .tease-prompt,
+      .tease-rule,
+      .tease-sub,
+      .tease-name .caret,
+      .menu-btn,
+      .menu-btn *,
+      .path .caret {
+        animation: none !important;
+        transition: none !important;
+      }
+
+      .replica.is-preamble .scan-preamble {
+        display: none !important;
+      }
+
+      .replica.is-preamble .boot-region,
+      .replica.is-preamble .section-title,
+      .replica.is-preamble .content-pane {
+        opacity: 1 !important;
+        visibility: visible !important;
+      }
+
+      .replica .boot-region,
+      .replica .section-title,
+      .replica .content-pane,
+      .replica .pane.is-active .block,
+      .replica .pane.is-active .portrait,
+      .replica .pane.is-active .line,
+      .replica .pane.is-active .panel,
+      .replica .pane.is-active .node,
+      .replica .pane.is-active .col,
+      .replica .pane.is-active .field,
+      .replica .pane.is-active .submit,
+      .replica .pane.is-active .type-line {
+        opacity: 1 !important;
+        transform: none !important;
+        clip-path: none !important;
+        max-width: 100% !important;
+      }
+
+      .menu-btn:hover .wipe,
+      .menu-btn:focus-visible .wipe,
+      .menu-btn.is-current .wipe,
+      .menu-btn:active .wipe {
+        transform: scaleX(1);
+      }
+
+      .menu-btn:hover .face-paper,
+      .menu-btn:focus-visible .face-paper,
+      .menu-btn.is-current .face-paper,
+      .menu-btn:active .face-paper {
+        clip-path: inset(0 0 0 100%);
+      }
+
+      .menu-btn:hover .chevron,
+      .menu-btn:focus-visible .chevron,
+      .menu-btn.is-current .chevron,
+      .menu-btn:active .chevron {
+        max-width: 1.15ch;
+      }
+
+      .menu-btn:hover .cursor,
+      .menu-btn:focus-visible .cursor {
+        opacity: 1;
+      }
+
+      .menu-btn:active {
+        border-color: #047857;
+        transform: translateY(3px) scale(0.985);
+        box-shadow: inset 0 3px 0 rgb(0 0 0 / 0.28);
+      }
+
+      .menu-btn:active .wipe {
+        background: var(--emerald-deep);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="lab-top">
+      <span>// homepage boot lab</span>
+      <span>~/portfolio/testing</span>
+    </header>
+
+    <h1>Homepage enter + content swap</h1>
+    <p class="lede">
+      Desktop homepage replica. Scan enter: black hold, slow console tease, one-second pause,
+      then the full-page scan. A menu click redraws only the section title and content pane.
+    </p>
+
+    <div class="lab-bar">
+      <ul class="variants" role="radiogroup" aria-label="Boot variant">
+        <li>
+          <label>
+            <input type="radio" name="variant" value="stagger" />
+            Stagger
+          </label>
+        </li>
+        <li>
+          <label>
+            <input type="radio" name="variant" value="type-on" />
+            Type-on
+          </label>
+        </li>
+        <li>
+          <label>
+            <input type="radio" name="variant" value="scan" checked />
+            Scan
+          </label>
+        </li>
+      </ul>
+      <button class="replay" type="button" id="replay">Replay enter</button>
+    </div>
+    <p class="scroll-hint">Layout stays desktop width; scroll horizontally if the window is narrow.</p>
+
+    <div class="viewport">
+      <div class="replica" id="replica" data-variant="scan" data-section="about">
+        <div class="scan-beam" aria-hidden="true"></div>
+        <div class="scan-preamble" aria-hidden="true">
+          <div class="preamble-tease">
+            <div class="tease-prompt">[ &gt; ] boot</div>
+            <div class="tease-name">Nicolás Sander<span class="caret"></span></div>
+            <div class="tease-rule"></div>
+            <div class="tease-sub">~/portfolio</div>
+          </div>
+        </div>
+
+        <div class="boot-region hp-topbar" style="--boot-i: 0">
+          <div class="lang-stub" aria-hidden="true">
+            <span>EN</span>
+            <span class="chev">▼</span>
+          </div>
+          <div class="path" id="path">
+            <span class="path-text">~/portfolio/about</span><span class="caret" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <div class="inner">
+          <div class="boot-region nameplate" style="--boot-i: 1">Nicolás Sander</div>
+
+          <div class="columns">
+            <div class="menu-col">
+              <nav class="boot-region" style="--boot-i: 2" aria-label="Homepage menu">
+                <ul class="menu-list" id="menu">
+                  <li>
+                    <button class="menu-btn is-current" type="button" data-id="about" data-title="about" aria-current="true">
+                      <span class="wipe"></span>
+                      <span class="face face-ink">
+                        <span class="prompt" aria-hidden="true">[<span class="chevron">&gt;</span>]</span>
+                        <span class="name">About me<span class="cursor" aria-hidden="true"></span></span>
+                      </span>
+                      <span class="face face-paper" aria-hidden="true">
+                        <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                        <span class="name">About me<span class="cursor"></span></span>
+                      </span>
+                    </button>
+                  </li>
+                  <li>
+                    <button class="menu-btn" type="button" data-id="how-i-build" data-title="how-i-build">
+                      <span class="wipe"></span>
+                      <span class="face face-ink">
+                        <span class="prompt" aria-hidden="true">[<span class="chevron">&gt;</span>]</span>
+                        <span class="name">How I Build Software<sup class="en">EN</sup><span class="cursor" aria-hidden="true"></span></span>
+                      </span>
+                      <span class="face face-paper" aria-hidden="true">
+                        <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                        <span class="name">How I Build Software<sup class="en">EN</sup><span class="cursor"></span></span>
+                      </span>
+                    </button>
+                  </li>
+                  <li>
+                    <button class="menu-btn" type="button" data-id="experience" data-title="experience">
+                      <span class="wipe"></span>
+                      <span class="face face-ink">
+                        <span class="prompt" aria-hidden="true">[<span class="chevron">&gt;</span>]</span>
+                        <span class="name">Experience<span class="cursor" aria-hidden="true"></span></span>
+                      </span>
+                      <span class="face face-paper" aria-hidden="true">
+                        <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                        <span class="name">Experience<span class="cursor"></span></span>
+                      </span>
+                    </button>
+                  </li>
+                  <li>
+                    <button class="menu-btn" type="button" data-id="expertise" data-title="expertise">
+                      <span class="wipe"></span>
+                      <span class="face face-ink">
+                        <span class="prompt" aria-hidden="true">[<span class="chevron">&gt;</span>]</span>
+                        <span class="name">Expertise<span class="cursor" aria-hidden="true"></span></span>
+                      </span>
+                      <span class="face face-paper" aria-hidden="true">
+                        <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                        <span class="name">Expertise<span class="cursor"></span></span>
+                      </span>
+                    </button>
+                  </li>
+                  <li>
+                    <button class="menu-btn" type="button" data-id="contact" data-title="contact">
+                      <span class="wipe"></span>
+                      <span class="face face-ink">
+                        <span class="prompt" aria-hidden="true">[<span class="chevron">&gt;</span>]</span>
+                        <span class="name">Contact<span class="cursor" aria-hidden="true"></span></span>
+                      </span>
+                      <span class="face face-paper" aria-hidden="true">
+                        <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                        <span class="name">Contact<span class="cursor"></span></span>
+                      </span>
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+
+              <div class="boot-region dir-wrap" style="--boot-i: 3">
+                <p class="dir-heading">/portfolio/files/</p>
+                <ul class="dir-tree">
+                  <li>
+                    <div class="dir-row">
+                      <svg class="dir-icon dir-icon-file" viewBox="0 0 24 24" aria-hidden="true">
+                        <path class="dir-outline" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z" />
+                        <path class="lines" pathLength="100" d="M9 13h6M9 16h4" />
+                      </svg>
+                      <span class="dir-name">resume.pdf</span>
+                    </div>
+                  </li>
+                  <li>
+                    <div class="dir-row dir-folder">
+                      <svg class="dir-icon dir-icon-folder" viewBox="0 0 24 24" aria-hidden="true">
+                        <path class="body" d="M3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9H3Z" />
+                        <path class="sheet" d="M5 11h14v7H5z" />
+                        <path class="lid" d="M3 6a2 2 0 0 1 2-2h5.532a2 2 0 0 1 1.536.72l1.9 2.28H3V6Z" />
+                      </svg>
+                      <span class="dir-name">projects</span>
+                    </div>
+                    <ul>
+                      <li>
+                        <div class="dir-row">
+                          <svg class="dir-icon dir-icon-file" viewBox="0 0 24 24" aria-hidden="true">
+                            <path class="dir-outline" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z" />
+                            <path class="lines" pathLength="100" d="M9 13h6M9 16h4" />
+                          </svg>
+                          <span class="dir-name">sdi_react.md</span>
+                        </div>
+                      </li>
+                      <li>
+                        <div class="dir-row">
+                          <svg class="dir-icon dir-icon-file" viewBox="0 0 24 24" aria-hidden="true">
+                            <path class="dir-outline" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z" />
+                            <path class="lines" pathLength="100" d="M9 13h6M9 16h4" />
+                          </svg>
+                          <span class="dir-name">SDI_api</span>
+                        </div>
+                      </li>
+                    </ul>
+                  </li>
+                  <li>
+                    <div class="dir-row">
+                      <svg class="dir-icon dir-icon-file" viewBox="0 0 24 24" aria-hidden="true">
+                        <path class="dir-outline" d="M10 3v4a1 1 0 0 1-1 1H5m14-4v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z" />
+                        <path class="lines" pathLength="100" d="M9 13h6M9 16h4" />
+                      </svg>
+                      <span class="dir-name">linked-in.sh</span>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+
+              <div class="boot-region console-stub" style="--boot-i: 4" aria-hidden="true">
+                <div class="pulse-graph">
+                  <div class="lights">
+                    <div class="light is-on"></div>
+                    <div class="light"></div>
+                    <div class="light is-on"></div>
+                  </div>
+                  <div class="trace"></div>
+                </div>
+                <div class="side-bars">
+                  <div class="bar"></div>
+                  <div class="bar"></div>
+                </div>
+                <div class="squares">
+                  <div class="square is-on"></div>
+                  <div class="square"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="content-col" id="content-col">
+              <div class="scan-beam" aria-hidden="true"></div>
+              <div class="section-title" id="section-title">// about</div>
+              <div class="content-pane" id="content-pane">
+                <div class="pane pane-about is-active" data-pane="about">
+                  <div class="portrait" style="--rise-i: 0"></div>
+                  <div class="block type-line" style="--rise-i: 1; --type-i: 0"><strong>profile.stub</strong> portrait · short bio lines</div>
+                  <div class="stack-lines" aria-hidden="true">
+                    <div class="line" style="--rise-i: 2"></div>
+                    <div class="line" style="--rise-i: 3"></div>
+                    <div class="line" style="--rise-i: 4"></div>
+                    <div class="line" style="--rise-i: 5"></div>
+                  </div>
+                </div>
+
+                <div class="pane pane-how" data-pane="how-i-build">
+                  <div class="block panel" style="--rise-i: 0"><strong>panel.a</strong> left column placeholder</div>
+                  <div class="block panel" style="--rise-i: 1"><strong>panel.b</strong> right column placeholder</div>
+                  <div class="block type-line" style="--rise-i: 2; --type-i: 0; flex-basis: 100%;"><strong>note</strong> two-panel layout for how-i-build</div>
+                </div>
+
+                <div class="pane pane-experience" data-pane="experience">
+                  <div class="timeline">
+                    <div class="block node" style="--rise-i: 0"><strong>role.01</strong> timeline node</div>
+                    <div class="block node" style="--rise-i: 1"><strong>role.02</strong> timeline node</div>
+                    <div class="block node" style="--rise-i: 2"><strong>role.03</strong> timeline node</div>
+                  </div>
+                  <div class="block type-line" style="--rise-i: 3; --type-i: 0"><strong>trail</strong> experience stub</div>
+                </div>
+
+                <div class="pane pane-expertise" data-pane="expertise">
+                  <div class="col" style="--rise-i: 0">
+                    <div class="block"><strong>skill.a</strong> left</div>
+                    <div class="block"><strong>skill.b</strong> left</div>
+                    <div class="block"><strong>skill.c</strong> left</div>
+                  </div>
+                  <div class="col" style="--rise-i: 1">
+                    <div class="block"><strong>skill.d</strong> right</div>
+                    <div class="block"><strong>skill.e</strong> right</div>
+                    <div class="block"><strong>skill.f</strong> right</div>
+                  </div>
+                  <div class="block type-line" style="--rise-i: 2; --type-i: 0; flex-basis: 100%;"><strong>grid</strong> two-column expertise</div>
+                </div>
+
+                <div class="pane pane-contact" data-pane="contact">
+                  <div class="field" style="--rise-i: 0"></div>
+                  <div class="field" style="--rise-i: 1"></div>
+                  <div class="field area" style="--rise-i: 2"></div>
+                  <div class="submit" style="--rise-i: 3"></div>
+                  <div class="block type-line" style="--rise-i: 4; --type-i: 0"><strong>form.stub</strong> contact fields</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var replica = document.getElementById("replica");
+      var menu = document.getElementById("menu");
+      var pathEl = document.getElementById("path");
+      var pathText = pathEl ? pathEl.querySelector(".path-text") : null;
+      var sectionTitle = document.getElementById("section-title");
+      var replayBtn = document.getElementById("replay");
+      var variantInputs = document.querySelectorAll('input[name="variant"]');
+
+      if (!replica || !menu || !pathText || !sectionTitle || !replayBtn) return;
+
+      var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var typeTimer = null;
+      var bootTimer = null;
+      var contentTimer = null;
+      var preambleTimers = [];
+
+      var SCAN_BLACK_MS = 500;
+      var SCAN_TEASE_MS = 1800;
+      var SCAN_HOLD_MS = 1000;
+      var SCAN_REVEAL_MS = 1300;
+
+      var titles = {
+        about: "about",
+        "how-i-build": "how-i-build",
+        experience: "experience",
+        expertise: "expertise",
+        contact: "contact"
+      };
+
+      function pathFor(id) {
+        return "~/portfolio/" + (titles[id] || id);
+      }
+
+      function clearTimers() {
+        if (typeTimer) {
+          clearInterval(typeTimer);
+          typeTimer = null;
+        }
+        if (bootTimer) {
+          clearTimeout(bootTimer);
+          bootTimer = null;
+        }
+        if (contentTimer) {
+          clearTimeout(contentTimer);
+          contentTimer = null;
+        }
+        for (var i = 0; i < preambleTimers.length; i++) {
+          clearTimeout(preambleTimers[i]);
+        }
+        preambleTimers = [];
+      }
+
+      function later(ms, fn) {
+        var id = setTimeout(fn, ms);
+        preambleTimers.push(id);
+        return id;
+      }
+
+      function clearPreambleClasses() {
+        replica.classList.remove(
+          "is-preamble",
+          "phase-black",
+          "phase-tease",
+          "phase-hold"
+        );
+      }
+
+      function restartAnimations(node) {
+        if (!node) return;
+        node.style.animation = "none";
+        void node.offsetWidth;
+        node.style.animation = "";
+        var kids = node.querySelectorAll("*");
+        for (var i = 0; i < kids.length; i++) {
+          kids[i].style.animation = "none";
+        }
+        void node.offsetWidth;
+        for (var j = 0; j < kids.length; j++) {
+          kids[j].style.animation = "";
+        }
+      }
+
+      function setPathInstant(id) {
+        pathEl.classList.remove("is-typing");
+        pathText.textContent = pathFor(id);
+      }
+
+      function typePath(id) {
+        var full = pathFor(id);
+        if (reduceMotion || replica.getAttribute("data-variant") !== "type-on") {
+          setPathInstant(id);
+          return;
+        }
+        if (typeTimer) clearInterval(typeTimer);
+        pathText.textContent = "";
+        pathEl.classList.add("is-typing");
+        var i = 0;
+        typeTimer = setInterval(function () {
+          i += 1;
+          pathText.textContent = full.slice(0, i);
+          if (i >= full.length) {
+            clearInterval(typeTimer);
+            typeTimer = null;
+            pathEl.classList.remove("is-typing");
+          }
+        }, 28);
+      }
+
+      function showPane(id) {
+        var panes = replica.querySelectorAll(".pane");
+        for (var i = 0; i < panes.length; i++) {
+          panes[i].classList.toggle("is-active", panes[i].getAttribute("data-pane") === id);
+        }
+        sectionTitle.textContent = "// " + (titles[id] || id);
+        replica.setAttribute("data-section", id);
+      }
+
+      function setActiveButton(id) {
+        var buttons = menu.querySelectorAll(".menu-btn");
+        for (var i = 0; i < buttons.length; i++) {
+          var on = buttons[i].getAttribute("data-id") === id;
+          buttons[i].classList.toggle("is-current", on);
+          if (on) buttons[i].setAttribute("aria-current", "true");
+          else buttons[i].removeAttribute("aria-current");
+        }
+      }
+
+      function settle() {
+        clearPreambleClasses();
+        replica.classList.remove("is-booting", "is-content-animating");
+        replica.classList.add("is-settled");
+      }
+
+      function bootDurationMs() {
+        var variant = replica.getAttribute("data-variant");
+        if (variant === "scan") return SCAN_REVEAL_MS;
+        if (variant === "type-on") return 2200;
+        return 1600;
+      }
+
+      function contentDurationMs() {
+        var variant = replica.getAttribute("data-variant");
+        if (variant === "scan") return 700;
+        if (variant === "type-on") return 1400;
+        return 1100;
+      }
+
+      function startScanReveal() {
+        clearPreambleClasses();
+        replica.classList.remove("is-settled", "is-content-animating");
+        replica.classList.remove("is-booting");
+        void replica.offsetWidth;
+        restartAnimations(replica);
+        replica.classList.add("is-booting");
+        setPathInstant(replica.getAttribute("data-section") || "about");
+
+        bootTimer = setTimeout(function () {
+          settle();
+        }, SCAN_REVEAL_MS);
+      }
+
+      function playScanEnter() {
+        clearPreambleClasses();
+        replica.classList.remove("is-settled", "is-content-animating", "is-booting");
+        void replica.offsetWidth;
+
+        replica.classList.add("is-preamble", "phase-black");
+
+        later(SCAN_BLACK_MS, function () {
+          replica.classList.remove("phase-black");
+          replica.classList.add("phase-tease");
+          var tease = replica.querySelector(".preamble-tease");
+          if (tease) restartAnimations(tease);
+        });
+
+        later(SCAN_BLACK_MS + SCAN_TEASE_MS, function () {
+          replica.classList.remove("phase-tease");
+          replica.classList.add("phase-hold");
+        });
+
+        later(SCAN_BLACK_MS + SCAN_TEASE_MS + SCAN_HOLD_MS, function () {
+          startScanReveal();
+        });
+      }
+
+      function playEnter() {
+        clearTimers();
+        if (reduceMotion) {
+          clearPreambleClasses();
+          setPathInstant(replica.getAttribute("data-section") || "about");
+          settle();
+          return;
+        }
+
+        if (replica.getAttribute("data-variant") === "scan") {
+          playScanEnter();
+          return;
+        }
+
+        clearPreambleClasses();
+        replica.classList.remove("is-settled", "is-content-animating");
+        replica.classList.remove("is-booting");
+        void replica.offsetWidth;
+        restartAnimations(replica);
+        replica.classList.add("is-booting");
+        typePath(replica.getAttribute("data-section") || "about");
+
+        bootTimer = setTimeout(function () {
+          settle();
+        }, bootDurationMs());
+      }
+
+      function playContent(id) {
+        clearTimers();
+        clearPreambleClasses();
+        showPane(id);
+        setActiveButton(id);
+
+        if (reduceMotion) {
+          setPathInstant(id);
+          settle();
+          return;
+        }
+
+        typePath(id);
+        replica.classList.remove("is-settled", "is-booting");
+        replica.classList.remove("is-content-animating");
+        void replica.offsetWidth;
+        var contentCol = document.getElementById("content-col");
+        restartAnimations(contentCol);
+        var contentBeam = contentCol ? contentCol.querySelector(".scan-beam") : null;
+        if (contentBeam) restartAnimations(contentBeam);
+        replica.classList.add("is-content-animating");
+
+        contentTimer = setTimeout(function () {
+          settle();
+        }, contentDurationMs());
+      }
+
+      menu.addEventListener("click", function (event) {
+        var button = event.target.closest(".menu-btn");
+        if (!button || !menu.contains(button)) return;
+        var id = button.getAttribute("data-id");
+        if (!id) return;
+        playContent(id);
+      });
+
+      replayBtn.addEventListener("click", function () {
+        playEnter();
+      });
+
+      for (var v = 0; v < variantInputs.length; v++) {
+        variantInputs[v].addEventListener("change", function (event) {
+          if (!event.target.checked) return;
+          replica.setAttribute("data-variant", event.target.value);
+          playEnter();
+        });
+      }
+
+      playEnter();
+    })();
+  </script>
+</body>
+</html>
