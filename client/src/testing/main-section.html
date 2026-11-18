@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Main section swap lab</title>
+  <style>
+    @font-face {
+      font-family: "Share Tech Mono";
+      src: url("../assets/fonts/ShareTechMono-Regular.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --emerald: #34d399;
+      --emerald-deep: #059669;
+      --emerald-flash: #6ee7b7;
+      --ink: #111827;
+      --ink-soft: #1f2937;
+      --paper: #e5e7eb;
+      --muted: #9ca3af;
+      --copy: #d1d5db;
+      --frame: #6b7280;
+      --bg: #242424;
+      --wipe-ms: 180ms;
+      --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--emerald);
+      font-family: "Share Tech Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+      font-synthesis: weight;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .shell {
+      width: min(92rem, calc(100% - 2rem));
+      margin: 1.5rem auto 3rem;
+      padding: clamp(0.85rem, 2vw, 1.5rem);
+      border: 1px solid var(--frame);
+      border-radius: 0.25rem;
+    }
+
+    .lab-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-bottom: 0.55rem;
+      border-bottom: 1px solid var(--frame);
+      font-size: 0.875rem;
+    }
+
+    h1 {
+      margin: 1.15rem 0 0;
+      color: var(--paper);
+      font-size: 1.35rem;
+      font-weight: 400;
+    }
+
+    .lede {
+      margin: 0.45rem 0 0;
+      max-width: 46rem;
+      color: var(--muted);
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+
+    .lab-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem 1.25rem;
+      margin: 1.15rem 0 0;
+      padding: 0.7rem 0.85rem;
+      border: 1px solid var(--frame);
+      background: rgb(0 0 0 / 0.18);
+    }
+
+    .variants {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .variants label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.7rem;
+      border: 1px solid var(--frame);
+      color: var(--copy);
+      font-size: 0.8125rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .variants label:has(input:checked) {
+      border-color: var(--emerald);
+      color: var(--emerald);
+      background: rgb(52 211 153 / 0.08);
+    }
+
+    .variants input { accent-color: var(--emerald); }
+
+    .replay {
+      appearance: none;
+      border: 1px solid var(--emerald);
+      background: transparent;
+      color: var(--emerald);
+      font: inherit;
+      font-size: 0.8125rem;
+      padding: 0.4rem 0.85rem;
+      cursor: pointer;
+    }
+
+    .replay:hover,
+    .replay:focus-visible {
+      background: var(--emerald);
+      color: var(--ink);
+      outline: none;
+    }
+
+    .readout,
+    .scroll-hint {
+      margin: 0.55rem 0 0;
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+
+    .viewport {
+      margin-top: 1rem;
+      overflow-x: auto;
+      padding-bottom: 0.35rem;
+    }
+
+    .replica {
+      --leave-ms: 240ms;
+      --enter-ms: 380ms;
+      position: relative;
+      width: 1400px;
+      min-width: 1400px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      border: 1px solid var(--frame);
+      border-radius: 0.25rem;
+      box-shadow: 0 10px 25px rgb(0 0 0 / 0.25);
+      color: var(--emerald);
+    }
+
+    .replica[data-variant="rise"] {
+      --leave-ms: 200ms;
+      --enter-ms: 680ms;
+    }
+
+    .replica[data-variant="scan"] {
+      --leave-ms: 180ms;
+      --enter-ms: 520ms;
+    }
+
+    .hp-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--frame);
+      font-size: 0.875rem;
+    }
+
+    .lang-stub {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      border: 1px solid var(--frame);
+      padding: 0.25rem 0.55rem;
+      background: transparent;
+      color: var(--copy);
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .lang-stub:focus-visible {
+      outline: 2px solid var(--emerald);
+      outline-offset: 2px;
+    }
+
+    .lang-stub .chev {
+      color: var(--muted);
+      font-size: 0.7rem;
+    }
+
+    .path {
+      color: var(--copy);
+      white-space: nowrap;
+    }
+
+    .inner {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      border: 2px solid var(--frame);
+    }
+
+    .nameplate {
+      background: var(--emerald);
+      color: var(--ink);
+      text-align: center;
+      padding: 0.5rem;
+      font-size: 1.875rem;
+    }
+
+    .columns {
+      display: flex;
+      min-height: 34rem;
+    }
+
+    .menu-col {
+      width: 40%;
+      flex: 0 0 40%;
+      padding-right: 1.5rem;
+      padding-top: 1.5rem;
+    }
+
+    .menu-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .content-col {
+      position: relative;
+      width: 60%;
+      flex: 1 1 60%;
+      min-width: 0;
+      padding-top: 0.35rem;
+    }
+
+    .scan-beam {
+      display: none;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 2px;
+      z-index: 5;
+      pointer-events: none;
+      background: linear-gradient(90deg, transparent, var(--emerald-flash), transparent);
+      box-shadow: 0 0 12px var(--emerald), 0 0 28px rgb(52 211 153 / 0.45);
+    }
+
+    .replica.is-scanning .scan-beam {
+      display: block;
+      animation: scan-travel var(--beam-ms, 700ms) linear forwards;
+    }
+
+    .section-title {
+      border: 2px solid var(--emerald);
+      padding: 0.5rem;
+      margin-top: 1.5rem;
+      text-align: center;
+      color: var(--paper);
+      font-size: 1.875rem;
+    }
+
+    .content-pane {
+      border: 2px solid var(--emerald);
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+      min-height: 26rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .boot-log,
+    .program-bar {
+      display: none;
+    }
+
+    .program-window,
+    .program-body {
+      display: contents;
+    }
+
+    .replica[data-variant="custom"] .program-window {
+      display: flex;
+      flex-direction: column;
+      margin-top: 1.5rem;
+      border: 1px solid var(--frame);
+      background: rgb(0 0 0 / 0.28);
+      box-shadow: 0 8px 20px rgb(0 0 0 / 0.28);
+      transform-origin: top center;
+      overflow: hidden;
+    }
+
+    .replica[data-variant="custom"] .program-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      min-height: 2.1rem;
+      padding: 0.35rem 0.7rem;
+      border-bottom: 1px solid var(--frame);
+      background: rgb(52 211 153 / 0.08);
+      color: var(--paper);
+      font-size: 0.8125rem;
+    }
+
+    .program-marks {
+      display: inline-flex;
+      gap: 0.3rem;
+      flex: 0 0 auto;
+    }
+
+    .program-marks i {
+      width: 0.55rem;
+      height: 0.55rem;
+      border: 1px solid var(--emerald);
+    }
+
+    .program-title {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .replica[data-variant="custom"] .program-body {
+      display: block;
+      padding: 0.85rem;
+    }
+
+    .replica[data-variant="custom"] .program-body .section-title {
+      margin-top: 0;
+    }
+
+    .replica[data-variant="custom"].is-booting .program-window {
+      display: none;
+    }
+
+    .replica[data-variant="custom"].is-booting .boot-log {
+      display: block;
+      margin-top: 1.5rem;
+      min-height: 32rem;
+      max-height: 32rem;
+      overflow: auto;
+      padding: 0.75rem 0.85rem;
+      border: 1px solid var(--frame);
+      background: rgb(0 0 0 / 0.35);
+      color: var(--emerald);
+      font-size: 0.75rem;
+      line-height: 1.45;
+      white-space: pre;
+    }
+
+    .replica[data-variant="custom"].is-preopen .program-window {
+      transform: scaleY(0);
+    }
+
+    .replica[data-variant="custom"].is-loading .section-title,
+    .replica[data-variant="custom"].is-loading .content-pane {
+      visibility: hidden;
+    }
+
+    .replica[data-variant="custom"].is-closing .program-window {
+      animation: window-close 200ms var(--ease) forwards;
+    }
+
+    .replica[data-variant="custom"].is-opening .program-window {
+      animation: window-open 200ms var(--ease) forwards;
+    }
+
+    .pane { display: none; }
+
+    .pane.is-active {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      min-height: 22rem;
+    }
+
+    .block {
+      border: 1px solid rgb(52 211 153 / 0.35);
+      background: rgb(52 211 153 / 0.05);
+      color: var(--muted);
+      font-size: 0.8125rem;
+      line-height: 1.4;
+      padding: 0.7rem 0.85rem;
+    }
+
+    .block strong {
+      display: block;
+      color: var(--emerald);
+      font-weight: 400;
+      margin-bottom: 0.2rem;
+    }
+
+    .pane-about .portrait {
+      width: 7rem;
+      height: 7rem;
+      margin: 0 auto;
+      border: 2px solid var(--emerald);
+      background: rgb(52 211 153 / 0.12);
+    }
+
+    .pane-about .line {
+      height: 0.7rem;
+      background: rgb(229 231 235 / 0.16);
+    }
+
+    .pane-about .line:nth-child(1) { width: 92%; }
+    .pane-about .line:nth-child(2) { width: 74%; }
+    .pane-about .line:nth-child(3) { width: 84%; }
+    .pane-about .line:nth-child(4) { width: 58%; }
+
+    .pane-split.is-active { flex-direction: row; }
+
+    .pane-split .block {
+      flex: 1;
+      min-height: 14rem;
+    }
+
+    .rail {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      padding-left: 1.1rem;
+      position: relative;
+    }
+
+    .rail::before {
+      content: "";
+      position: absolute;
+      left: 0.28rem;
+      top: 0.4rem;
+      bottom: 0.4rem;
+      width: 2px;
+      background: rgb(52 211 153 / 0.45);
+    }
+
+    .chip-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem;
+    }
+
+    .field {
+      height: 2.15rem;
+      border: 1px solid rgb(52 211 153 / 0.4);
+      background: rgb(0 0 0 / 0.2);
+    }
+
+    .field.area { height: 6.5rem; }
+
+    .submit {
+      width: 8rem;
+      height: 2.25rem;
+      border: 1px solid var(--emerald);
+      background: rgb(52 211 153 / 0.15);
+    }
+
+    /* ---- Menu buttons ---- */
+    .menu-btn {
+      position: relative;
+      isolation: isolate;
+      display: block;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid var(--emerald);
+      border-radius: 0;
+      background: transparent;
+      color: var(--paper);
+      font: inherit;
+      font-size: 1.875rem;
+      font-weight: 400;
+      font-synthesis: weight;
+      line-height: 2.25rem;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
+      user-select: none;
+      appearance: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 80ms ease, box-shadow 80ms ease, border-color 80ms ease;
+    }
+
+    .menu-btn:hover,
+    .menu-btn:focus {
+      color: var(--paper);
+      border-color: var(--emerald);
+      background: transparent;
+      text-decoration: none;
+    }
+
+    .menu-btn:focus { outline: none; }
+
+    .menu-btn:focus-visible {
+      outline: 2px solid var(--emerald);
+      outline-offset: 3px;
+    }
+
+    .menu-btn .wipe {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background: var(--emerald);
+      transform: scaleX(0);
+      transform-origin: left center;
+      transition: transform var(--wipe-ms) var(--ease);
+      pointer-events: none;
+    }
+
+    .menu-btn .face {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1ch;
+      padding: 1.5rem;
+    }
+
+    .menu-btn .face-ink {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      color: var(--ink);
+    }
+
+    .menu-btn .face-paper {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      color: var(--paper);
+      clip-path: inset(0 0 0 0);
+      transition: clip-path var(--wipe-ms) var(--ease);
+      pointer-events: none;
+    }
+
+    .menu-btn .prompt {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    .menu-btn .chevron {
+      display: inline-block;
+      max-width: 0;
+      overflow: hidden;
+      vertical-align: bottom;
+      transition: max-width 140ms ease 40ms;
+    }
+
+    .menu-btn .name {
+      min-width: 0;
+      text-align: center;
+    }
+
+    .menu-btn .en {
+      margin-left: 0.35rem;
+      color: var(--emerald);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.025em;
+      line-height: 0;
+      vertical-align: super;
+    }
+
+    .menu-btn .face-ink .en { color: var(--ink-soft); }
+
+    .menu-btn .cursor {
+      display: inline-block;
+      width: 0.62ch;
+      height: 1.05em;
+      margin-left: 0.28ch;
+      background: currentColor;
+      vertical-align: -0.12em;
+      opacity: 0;
+    }
+
+    .menu-btn:hover .wipe,
+    .menu-btn:focus-visible .wipe,
+    .menu-btn.is-current .wipe,
+    .menu-btn:active .wipe {
+      transform: scaleX(1);
+    }
+
+    .menu-btn:hover .face-paper,
+    .menu-btn:focus-visible .face-paper,
+    .menu-btn.is-current .face-paper,
+    .menu-btn:active .face-paper {
+      clip-path: inset(0 0 0 100%);
+    }
+
+    .menu-btn:hover .chevron,
+    .menu-btn:focus-visible .chevron,
+    .menu-btn.is-current .chevron,
+    .menu-btn:active .chevron {
+      max-width: 1.15ch;
+    }
+
+    .menu-btn:hover .cursor,
+    .menu-btn:focus-visible .cursor {
+      animation: menu-btn-blink 1.05s steps(1, end) infinite;
+    }
+
+    .menu-btn.is-current { font-weight: 700; }
+
+    .menu-btn.is-current .cursor {
+      opacity: 0;
+      animation: none;
+    }
+
+    .menu-btn.is-current:hover .cursor,
+    .menu-btn.is-current:focus-visible .cursor {
+      animation: menu-btn-blink 1.05s steps(1, end) infinite;
+    }
+
+    .menu-btn:active {
+      border-color: #047857;
+      transform: translateY(3px) scale(0.985);
+      box-shadow: inset 0 3px 0 rgb(0 0 0 / 0.28);
+    }
+
+    .menu-btn:active .wipe {
+      background: var(--emerald-deep);
+      animation: menu-btn-keystrike 140ms ease forwards;
+    }
+
+    .menu-btn:active .cursor,
+    .menu-btn.is-current:active .cursor {
+      opacity: 1;
+      animation: none;
+    }
+
+    /* ---- Swap: wipe ---- */
+    .replica[data-variant="wipe"].is-leaving .section-title,
+    .replica[data-variant="wipe"].is-leaving .content-pane {
+      animation: wipe-out var(--leave-ms) var(--ease) forwards;
+    }
+
+    .replica[data-variant="wipe"].is-entering .section-title,
+    .replica[data-variant="wipe"].is-entering .content-pane {
+      clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+      animation: wipe-in var(--enter-ms) var(--ease) forwards;
+    }
+
+    /* ---- Swap: rise ---- */
+    .replica[data-variant="rise"].is-leaving .section-title,
+    .replica[data-variant="rise"].is-leaving .pane.is-active .swap-item {
+      animation: rise-out var(--leave-ms) var(--ease) forwards;
+    }
+
+    .replica[data-variant="rise"].is-entering .section-title {
+      opacity: 0;
+      transform: translateY(10px);
+      animation: rise-in 260ms var(--ease) forwards;
+    }
+
+    .replica[data-variant="rise"].is-entering .pane.is-active .swap-item {
+      opacity: 0;
+      transform: translateY(14px);
+      animation: rise-in 280ms var(--ease) forwards;
+      animation-delay: calc(80ms + (var(--i, 0) * 55ms));
+    }
+
+    /* ---- Swap: scan ---- */
+    .replica[data-variant="scan"].is-leaving .section-title,
+    .replica[data-variant="scan"].is-leaving .content-pane {
+      animation: scan-out var(--leave-ms) var(--ease) forwards;
+    }
+
+    .replica[data-variant="scan"].is-entering .section-title,
+    .replica[data-variant="scan"].is-entering .content-pane {
+      clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+      animation: scan-in var(--enter-ms) var(--ease) forwards;
+    }
+
+    .replica.is-settled .section-title,
+    .replica.is-settled .content-pane,
+    .replica.is-settled .pane.is-active .swap-item {
+      opacity: 1;
+      transform: none;
+      clip-path: none;
+      animation: none;
+    }
+
+    @keyframes wipe-out {
+      from { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+      to { clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%); }
+    }
+
+    @keyframes wipe-in {
+      from { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); }
+      to { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+    }
+
+    @keyframes rise-out {
+      to {
+        opacity: 0;
+        transform: translateY(-14px);
+      }
+    }
+
+    @keyframes rise-in {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes scan-out {
+      from { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+      to {
+        opacity: 0;
+        clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+      }
+    }
+
+    @keyframes scan-in {
+      from { clip-path: polygon(0 0, 100% 0, 100% 0, 0 0); }
+      to { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+    }
+
+    @keyframes scan-travel {
+      from { top: 0; opacity: 1; }
+      to { top: 100%; opacity: 0.45; }
+    }
+
+    @keyframes menu-btn-blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    @keyframes menu-btn-keystrike {
+      0% { background-color: var(--emerald-flash); filter: brightness(1.2); }
+      100% { background-color: var(--emerald-deep); filter: none; }
+    }
+
+    @keyframes window-close {
+      from { transform: scaleY(1); }
+      to { transform: scaleY(0); }
+    }
+
+    @keyframes window-open {
+      from { transform: scaleY(0); }
+      to { transform: scaleY(1); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .replica.is-leaving .section-title,
+      .replica.is-leaving .content-pane,
+      .replica.is-leaving .swap-item,
+      .replica.is-entering .section-title,
+      .replica.is-entering .content-pane,
+      .replica.is-entering .swap-item,
+      .replica .scan-beam,
+      .replica .program-window,
+      .menu-btn,
+      .menu-btn * {
+        animation: none !important;
+        transition: none !important;
+      }
+
+      .section-title,
+      .content-pane,
+      .pane.is-active .swap-item {
+        opacity: 1 !important;
+        transform: none !important;
+        clip-path: none !important;
+      }
+
+      .menu-btn:hover .wipe,
+      .menu-btn:focus-visible .wipe,
+      .menu-btn.is-current .wipe,
+      .menu-btn:active .wipe {
+        transform: scaleX(1);
+      }
+
+      .menu-btn:hover .face-paper,
+      .menu-btn:focus-visible .face-paper,
+      .menu-btn.is-current .face-paper,
+      .menu-btn:active .face-paper {
+        clip-path: inset(0 0 0 100%);
+      }
+
+      .menu-btn:hover .chevron,
+      .menu-btn:focus-visible .chevron,
+      .menu-btn.is-current .chevron,
+      .menu-btn:active .chevron {
+        max-width: 1.15ch;
+      }
+
+      .menu-btn:active {
+        border-color: #047857;
+        transform: translateY(3px) scale(0.985);
+        box-shadow: inset 0 3px 0 rgb(0 0 0 / 0.28);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="lab-top">
+      <span>// main section lab</span>
+      <span>~/portfolio/testing</span>
+    </header>
+
+    <h1>Menu press → section swap</h1>
+    <p class="lede">
+      Desktop menu, same column as the homepage. The pane on the right is a stub.
+      Press a line to clear the current section and draw the next one. The menu itself stays put.
+    </p>
+
+    <div class="lab-bar">
+      <ul class="variants" role="radiogroup" aria-label="Swap variant">
+        <li>
+          <label>
+            <input type="radio" name="variant" value="wipe" checked />
+            Wipe
+          </label>
+        </li>
+        <li>
+          <label>
+            <input type="radio" name="variant" value="rise" />
+            Rise
+          </label>
+        </li>
+        <li>
+          <label>
+            <input type="radio" name="variant" value="scan" />
+            Scan
+          </label>
+        </li>
+        <li>
+          <label>
+            <input type="radio" name="variant" value="custom" />
+            Custom
+          </label>
+        </li>
+      </ul>
+      <button class="replay" type="button" id="replay">Replay swap</button>
+    </div>
+    <p class="readout" id="readout">// settled · wipe · about</p>
+    <p class="scroll-hint">Layout stays desktop width; scroll horizontally if the window is narrow. Click the active line again to replay that swap.</p>
+
+    <div class="viewport">
+      <div class="replica is-settled" id="replica" data-variant="wipe" data-section="about">
+        <div class="hp-topbar">
+          <button class="lang-stub" type="button" id="lang-toggle" aria-label="Language">
+            <span id="lang-label">EN</span>
+            <span class="chev" aria-hidden="true">▼</span>
+          </button>
+          <div class="path" id="path">~/portfolio/about</div>
+        </div>
+
+        <div class="inner">
+          <div class="nameplate">Nicolás Sander</div>
+
+          <div class="columns">
+            <div class="menu-col">
+              <nav aria-label="Homepage menu">
+                <ul class="menu-list" id="menu">
+                  <li>
+                    <button class="menu-btn is-current" type="button" data-id="about" aria-current="true">
+                      <span class="wipe"></span>
+                      <span class="face face-ink">
+                        <span class="prompt" aria-hidden="true">[<span class="chevron">&gt;</span>]</span>
+                        <span class="name">About me<span class="cursor" aria-hidden="true"></span></span>
+                      </span>
+                      <span class="face face-paper" aria-hidden="true">
+                        <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                        <span class="name">About me<span class="cursor"></span></span>
+                      </span>
+                    </button>
+                  </li>
+                  <li>
+                    <button class="menu-btn" type="button" data-id="how-i-build">
+                      <span class="wipe"></span>
+                      <span class="face face-ink">
+                        <span class="prompt" aria-hidden="true">[<span class="chevron">&gt;</span>]</span>
+                        <span class="name">How I Build Software<sup class="en">EN</sup><span class="cursor" aria-hidden="true"></span></span>
+                      </span>
+                      <span class="face face-paper" aria-hidden="true">
+                        <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                        <span class="name">How I Build Software<sup class="en">EN</sup><span class="cursor"></span></span>
+                      </span>
+                    </button>
+                  </li>
+                  <li>
+                    <button class="menu-btn" type="button" data-id="experience">
+                      <span class="wipe"></span>
+                      <span class="face face-ink">
+                        <span class="prompt" aria-hidden="true">[<span class="chevron">&gt;</span>]</span>
+                        <span class="name">Experience<span class="cursor" aria-hidden="true"></span></span>
+                      </span>
+                      <span class="face face-paper" aria-hidden="true">
+                        <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                        <span class="name">Experience<span class="cursor"></span></span>
+                      </span>
+                    </button>
+                  </li>
+                  <li>
+                    <button class="menu-btn" type="button" data-id="expertise">
+                      <span class="wipe"></span>
+                      <span class="face face-ink">
+                        <span class="prompt" aria-hidden="true">[<span class="chevron">&gt;</span>]</span>
+                        <span class="name">Expertise<span class="cursor" aria-hidden="true"></span></span>
+                      </span>
+                      <span class="face face-paper" aria-hidden="true">
+                        <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                        <span class="name">Expertise<span class="cursor"></span></span>
+                      </span>
+                    </button>
+                  </li>
+                  <li>
+                    <button class="menu-btn" type="button" data-id="contact">
+                      <span class="wipe"></span>
+                      <span class="face face-ink">
+                        <span class="prompt" aria-hidden="true">[<span class="chevron">&gt;</span>]</span>
+                        <span class="name">Contact<span class="cursor" aria-hidden="true"></span></span>
+                      </span>
+                      <span class="face face-paper" aria-hidden="true">
+                        <span class="prompt">[<span class="chevron">&gt;</span>]</span>
+                        <span class="name">Contact<span class="cursor"></span></span>
+                      </span>
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+
+            <div class="content-col" id="content-col">
+              <div class="scan-beam" aria-hidden="true"></div>
+              <div class="boot-log" id="boot-log" aria-hidden="true"></div>
+              <div class="program-window" id="program-window">
+                <div class="program-bar">
+                  <span class="program-marks" aria-hidden="true"><i></i><i></i><i></i></span>
+                  <span class="program-title" id="program-title">// about</span>
+                </div>
+                <div class="program-body">
+              <div class="section-title" id="section-title">// about</div>
+              <div class="content-pane" id="content-pane">
+                <div class="pane pane-about is-active" data-pane="about">
+                  <div class="portrait swap-item" style="--i: 0"></div>
+                  <div class="block swap-item" style="--i: 1"><strong>about.stub</strong> portrait and a short bio</div>
+                  <div class="line swap-item" style="--i: 2"></div>
+                  <div class="line swap-item" style="--i: 3"></div>
+                  <div class="line swap-item" style="--i: 4"></div>
+                  <div class="line swap-item" style="--i: 5"></div>
+                </div>
+
+                <div class="pane pane-split" data-pane="how-i-build">
+                  <div class="block swap-item" style="--i: 0"><strong>panel.a</strong> left placeholder</div>
+                  <div class="block swap-item" style="--i: 1"><strong>panel.b</strong> right placeholder</div>
+                </div>
+
+                <div class="pane" data-pane="experience">
+                  <div class="rail">
+                    <div class="block swap-item" style="--i: 0"><strong>role.01</strong> timeline stub</div>
+                    <div class="block swap-item" style="--i: 1"><strong>role.02</strong> timeline stub</div>
+                    <div class="block swap-item" style="--i: 2"><strong>role.03</strong> timeline stub</div>
+                    <div class="block swap-item" style="--i: 3"><strong>role.04</strong> timeline stub</div>
+                  </div>
+                </div>
+
+                <div class="pane" data-pane="expertise">
+                  <div class="chip-grid">
+                    <div class="block swap-item" style="--i: 0"><strong>skill.a</strong> left</div>
+                    <div class="block swap-item" style="--i: 1"><strong>skill.b</strong> right</div>
+                    <div class="block swap-item" style="--i: 2"><strong>skill.c</strong> left</div>
+                    <div class="block swap-item" style="--i: 3"><strong>skill.d</strong> right</div>
+                    <div class="block swap-item" style="--i: 4"><strong>skill.e</strong> left</div>
+                    <div class="block swap-item" style="--i: 5"><strong>skill.f</strong> right</div>
+                  </div>
+                </div>
+
+                <div class="pane" data-pane="contact">
+                  <div class="field swap-item" style="--i: 0"></div>
+                  <div class="field swap-item" style="--i: 1"></div>
+                  <div class="field area swap-item" style="--i: 2"></div>
+                  <div class="submit swap-item" style="--i: 3"></div>
+                  <div class="block swap-item" style="--i: 4"><strong>form.stub</strong> contact fields</div>
+                </div>
+              </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var replica = document.getElementById("replica");
+      var menu = document.getElementById("menu");
+      var pathEl = document.getElementById("path");
+      var sectionTitle = document.getElementById("section-title");
+      var programTitle = document.getElementById("program-title");
+      var programWindow = document.getElementById("program-window");
+      var bootLog = document.getElementById("boot-log");
+      var readout = document.getElementById("readout");
+      var replayBtn = document.getElementById("replay");
+      var langToggle = document.getElementById("lang-toggle");
+      var langLabel = document.getElementById("lang-label");
+      var variantInputs = document.querySelectorAll('input[name="variant"]');
+
+      if (!replica || !menu || !pathEl || !sectionTitle || !readout || !replayBtn) return;
+      if (!programTitle || !programWindow || !bootLog || !langToggle || !langLabel) return;
+
+      var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var current = "about";
+      var pending = "about";
+      var phase = "settled";
+      var timer = null;
+      var timers = [];
+      var seq = 0;
+      var windowOpen = false;
+      var lang = "en";
+      var saveDots = 1;
+      var customClasses = ["is-saving", "is-closing", "is-booting", "is-preopen", "is-opening", "is-loading"];
+
+      var titles = {
+        about: "about",
+        "how-i-build": "how-i-build",
+        experience: "experience",
+        expertise: "expertise",
+        contact: "contact"
+      };
+
+      function variant() {
+        return replica.getAttribute("data-variant") || "wipe";
+      }
+
+      function readMs(name) {
+        var value = getComputedStyle(replica).getPropertyValue(name);
+        var n = parseFloat(value);
+        return isNaN(n) ? 0 : n;
+      }
+
+      function phaseMs(kind) {
+        return readMs(kind === "leave" ? "--leave-ms" : "--enter-ms");
+      }
+
+      function later(fn, ms) {
+        var handle = setTimeout(fn, ms);
+        timers.push(handle);
+        return handle;
+      }
+
+      function clearTimers() {
+        if (timer) {
+          clearTimeout(timer);
+          timer = null;
+        }
+        for (var i = 0; i < timers.length; i++) clearTimeout(timers[i]);
+        timers = [];
+      }
+
+      function clearCustomClasses() {
+        for (var i = 0; i < customClasses.length; i++) {
+          replica.classList.remove(customClasses[i]);
+        }
+      }
+
+      function savingWord(dots) {
+        var word = lang === "es" ? "guardando" : "saving";
+        var marks = "";
+        for (var i = 0; i < dots; i++) marks += ".";
+        return word + marks;
+      }
+
+      function appendLine(text) {
+        var row = document.createElement("div");
+        row.className = "boot-line";
+        row.textContent = text;
+        bootLog.appendChild(row);
+        bootLog.scrollTop = bootLog.scrollHeight;
+      }
+
+      function queueLine(token, text, delay) {
+        later(function () {
+          if (token !== seq) return;
+          appendLine(text);
+        }, delay);
+      }
+
+      function introLines(id) {
+        var path = "~/portfolio/" + label(id);
+        if (lang === "es") {
+          return [
+            "> abrir " + path,
+            "> enlazar section." + id,
+            "> reservar pane"
+          ];
+        }
+        return [
+          "> open " + path,
+          "> link section." + id,
+          "> alloc pane"
+        ];
+      }
+
+      function floodLines(id) {
+        var pool = [
+          "open  src/pages/" + id + ".tsx",
+          "read  src/components/TypingText.tsx",
+          "stat  src/i18n.js",
+          "link  ~/portfolio/" + id,
+          "bind  section-title",
+          "bind  content-pane",
+          "ok    assets/fonts/ShareTechMono-Regular.ttf",
+          "cmp   swap-item --i=0",
+          "cmp   swap-item --i=1",
+          "cmp   swap-item --i=2",
+          "map   header." + id,
+          "eval  menu-btn[data-id=" + id + "]",
+          "load  chunk " + id + ".pane",
+          "use   emerald #34d399",
+          "pipe  stdout >> pane",
+          "chk   border 2px solid var(--emerald)",
+          "alloc buffer 4096",
+          "mmap  content-col 60%",
+          "push  frame program-window",
+          "done  preload " + id
+        ];
+        var lines = [];
+        for (var i = 0; i < 40; i++) {
+          lines.push(pool[i % pool.length] + "  [" + (i + 1) + "]");
+        }
+        return lines;
+      }
+
+      function label(id) {
+        return titles[id] || id;
+      }
+
+      function renderReadout() {
+        var fromTo = current === pending ? label(current) : label(current) + " → " + label(pending);
+        readout.textContent = "// " + phase + " · " + variant() + " · " + fromTo;
+      }
+
+      function setActiveButton(id) {
+        var buttons = menu.querySelectorAll(".menu-btn");
+        for (var i = 0; i < buttons.length; i++) {
+          var on = buttons[i].getAttribute("data-id") === id;
+          buttons[i].classList.toggle("is-current", on);
+          if (on) buttons[i].setAttribute("aria-current", "true");
+          else buttons[i].removeAttribute("aria-current");
+        }
+      }
+
+      function commit(id) {
+        var panes = replica.querySelectorAll(".pane");
+        for (var i = 0; i < panes.length; i++) {
+          panes[i].classList.toggle("is-active", panes[i].getAttribute("data-pane") === id);
+        }
+        sectionTitle.textContent = "// " + label(id);
+        programTitle.textContent = "// " + label(id);
+        pathEl.textContent = "~/portfolio/" + label(id);
+        replica.setAttribute("data-section", id);
+        current = id;
+      }
+
+      function settle() {
+        timer = null;
+        phase = "settled";
+        replica.classList.remove("is-leaving", "is-entering", "is-scanning");
+        clearCustomClasses();
+        bootLog.textContent = "";
+        replica.classList.add("is-settled");
+        renderReadout();
+      }
+
+      function beginBeam() {
+        if (variant() !== "scan") {
+          replica.classList.remove("is-scanning");
+          return;
+        }
+        var total = readMs("--leave-ms") + readMs("--enter-ms");
+        replica.style.setProperty("--beam-ms", total + "ms");
+        replica.classList.remove("is-scanning");
+        void replica.offsetWidth;
+        replica.classList.add("is-scanning");
+      }
+
+      function beginEnter() {
+        phase = "entering";
+        commit(pending);
+        replica.classList.remove("is-settled", "is-leaving", "is-entering");
+        void replica.offsetWidth;
+        replica.classList.add("is-entering");
+        renderReadout();
+        timer = setTimeout(settle, phaseMs("enter"));
+      }
+
+      function beginLeave() {
+        phase = "leaving";
+        replica.classList.remove("is-settled", "is-entering", "is-leaving");
+        void replica.offsetWidth;
+        replica.classList.add("is-leaving");
+        renderReadout();
+        timer = setTimeout(beginEnter, phaseMs("leave"));
+      }
+
+      function startOpen(token, id) {
+        if (token !== seq) return;
+        phase = "loading";
+        bootLog.textContent = "";
+        programTitle.textContent = "Loading";
+        replica.classList.remove("is-settled", "is-leaving", "is-entering", "is-scanning");
+        clearCustomClasses();
+        replica.classList.add("is-loading");
+        replica.classList.add("is-preopen");
+        void programWindow.offsetWidth;
+        replica.classList.remove("is-preopen");
+        replica.classList.add("is-opening");
+        renderReadout();
+        later(function () {
+          if (token !== seq) return;
+          replica.classList.remove("is-opening");
+          later(function () {
+            if (token !== seq) return;
+            finishCustom(token, id);
+          }, 500);
+        }, 200);
+      }
+
+      function startFlood(token, id) {
+        if (token !== seq) return;
+        var lines = floodLines(id);
+        var step = 700 / lines.length;
+        appendLine(lines[0]);
+        for (var i = 1; i < lines.length; i++) {
+          queueLine(token, lines[i], Math.round(i * step));
+        }
+        later(function () {
+          startOpen(token, id);
+        }, 700);
+      }
+
+      function startBoot(token, id) {
+        if (token !== seq) return;
+        phase = "booting";
+        windowOpen = false;
+        bootLog.textContent = "";
+        replica.classList.remove("is-settled", "is-leaving", "is-entering", "is-scanning");
+        clearCustomClasses();
+        replica.classList.add("is-booting");
+        renderReadout();
+        var lines = introLines(id);
+        appendLine(lines[0]);
+        for (var i = 1; i < lines.length; i++) {
+          queueLine(token, lines[i], Math.round(600 * i / lines.length));
+        }
+        later(function () {
+          startFlood(token, id);
+        }, 600);
+      }
+
+      function startClose(token, id) {
+        if (token !== seq) return;
+        phase = "closing";
+        windowOpen = false;
+        replica.classList.remove("is-settled", "is-leaving", "is-entering", "is-scanning");
+        clearCustomClasses();
+        void replica.offsetWidth;
+        replica.classList.add("is-closing");
+        renderReadout();
+        later(function () {
+          startBoot(token, id);
+        }, 200);
+      }
+
+      function startSaving(token, id) {
+        if (token !== seq) return;
+        phase = "saving";
+        replica.classList.remove("is-settled", "is-leaving", "is-entering", "is-scanning");
+        clearCustomClasses();
+        replica.classList.add("is-saving");
+        saveDots = 1;
+        programTitle.textContent = savingWord(1);
+        renderReadout();
+        for (var dot = 2; dot <= 3; dot++) {
+          later(function (count) {
+            return function () {
+              if (token !== seq) return;
+              saveDots = count;
+              programTitle.textContent = savingWord(count);
+            };
+          }(dot), Math.round(500 * (dot - 1) / 3));
+        }
+        later(function () {
+          startClose(token, id);
+        }, 500);
+      }
+
+      function finishCustom(token, id) {
+        if (token !== seq) return;
+        commit(id);
+        windowOpen = true;
+        settle();
+      }
+
+      function play(id) {
+        clearTimers();
+        seq += 1;
+        var token = seq;
+        pending = id;
+        setActiveButton(id);
+
+        if (reduceMotion) {
+          commit(id);
+          windowOpen = variant() === "custom";
+          settle();
+          return;
+        }
+
+        if (variant() === "custom") {
+          if (windowOpen) startSaving(token, id);
+          else startBoot(token, id);
+          return;
+        }
+
+        windowOpen = false;
+        clearCustomClasses();
+        bootLog.textContent = "";
+        beginBeam();
+        beginLeave();
+      }
+
+      menu.addEventListener("click", function (event) {
+        var button = event.target.closest(".menu-btn");
+        if (!button || !menu.contains(button)) return;
+        var id = button.getAttribute("data-id");
+        if (!id) return;
+        play(id);
+      });
+
+      replayBtn.addEventListener("click", function () {
+        play(current);
+      });
+
+      langToggle.addEventListener("click", function () {
+        lang = lang === "en" ? "es" : "en";
+        langLabel.textContent = lang === "en" ? "EN" : "ES";
+        if (phase === "saving") programTitle.textContent = savingWord(saveDots);
+      });
+
+      for (var v = 0; v < variantInputs.length; v++) {
+        variantInputs[v].addEventListener("change", function (event) {
+          if (!event.target.checked) return;
+          replica.setAttribute("data-variant", event.target.value);
+          play(current);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

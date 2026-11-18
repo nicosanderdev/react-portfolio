@@ -1,0 +1,148 @@
+.section-swap .boot-log {
+  display: none;
+}
+
+.section-swap .program-window {
+  display: flex;
+  flex-direction: column;
+  margin-top: 1.5rem;
+  border: 1px solid #6b7280;
+  background: rgb(0 0 0 / 0.28);
+  box-shadow: 0 8px 20px rgb(0 0 0 / 0.28);
+  transform-origin: top center;
+  overflow: hidden;
+}
+
+.section-swap .program-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 2.1rem;
+  padding: 0.35rem 0.7rem;
+  border-bottom: 1px solid #6b7280;
+  background: rgb(52 211 153 / 0.08);
+  color: #e5e7eb;
+  font-size: 0.8125rem;
+}
+
+.section-swap .program-marks {
+  display: inline-flex;
+  gap: 0.3rem;
+  flex: 0 0 auto;
+}
+
+.section-swap .program-marks i {
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  border: 1px solid #34d399;
+}
+
+.section-swap .program-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.section-swap .program-body {
+  display: block;
+  padding: 0.85rem;
+}
+
+.section-swap .idle-prompt {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 9rem;
+  padding: 1.35rem 0.35rem 1.6rem;
+  color: #34d399;
+  font-family: "Share Tech Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.section-swap .idle-caret {
+  display: inline-block;
+  width: 0.55ch;
+  height: 1em;
+  background: #34d399;
+  animation: homepage-caret-blink 1.05s steps(1, end) infinite;
+}
+
+.section-swap .program-body [data-scan-role="section-title"] {
+  margin-top: 0;
+}
+
+.section-swap.is-booting .program-window {
+  display: none;
+}
+
+.section-swap.is-booting .boot-log {
+  display: block;
+  margin-top: 1.5rem;
+  min-height: 32rem;
+  max-height: 32rem;
+  overflow: auto;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid #6b7280;
+  background: rgb(0 0 0 / 0.35);
+  color: #34d399;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  white-space: pre;
+  font-family: "Share Tech Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+
+.section-swap.is-preopen .program-window {
+  transform: scaleY(0);
+}
+
+.section-swap.is-loading [data-scan-role="section-title"],
+.section-swap.is-loading [data-scan-role="content-pane"] {
+  visibility: hidden;
+}
+
+.homepage-scan.is-settled .section-swap.is-loading [data-scan-role="section-title"],
+.homepage-scan.is-settled .section-swap.is-loading [data-scan-role="content-pane"] {
+  visibility: hidden;
+}
+
+.section-swap.is-closing .program-window {
+  animation: window-close 200ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+.section-swap.is-opening .program-window {
+  animation: window-open 200ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+@keyframes window-close {
+  from {
+    transform: scaleY(1);
+  }
+  to {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes window-open {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section-swap .program-window {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+
+  .section-swap .idle-caret {
+    animation: none !important;
+    opacity: 1;
+  }
+}

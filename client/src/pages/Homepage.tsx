@@ -3,16 +3,17 @@ import TypingText from "../components/TypingText";
 import DirectoryListing from "../components/DirectoryListing";
 import ConsolePulse from "../components/ConsolePlus/ConsolePulse";
 import HomeButtonComponent from "../components/Home/HomeButtonComponent";
+import "../components/Home/SectionSwap.css";
 import {
     ScanBeam,
     ScanIntroOverlay,
     scanShellClassName,
     useScanIntroPhase,
 } from "../components/Home/ScanIntro";
+import { useSectionSwap } from "../components/Home/useSectionSwap";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "../components/LanguageSelector";
 import {
-    DEFAULT_SECTION_ID,
     getSectionById,
     PORTFOLIO_SECTIONS,
     type PortfolioSectionId,
@@ -20,21 +21,24 @@ import {
 import HowIBuildPage from "./HowIBuildPage";
 
 export default function Homepage() {
-    const [active, setActive] = useState<PortfolioSectionId>(DEFAULT_SECTION_ID);
     const [isExpanded, setIsExpanded] = useState(false);
-    const scanPhase = useScanIntroPhase();
-
-    const activeSection = getSectionById(active);
-    const ActivePage = activeSection.Page;
-
+    const intro = useScanIntroPhase();
+    const scanPhase = intro.phase;
+    const swap = useSectionSwap(scanPhase === "done");
     const { t, i18n } = useTranslation();
+
+    const shownSection = swap.shown ? getSectionById(swap.shown) : null;
+    const ActivePage = shownSection?.Page;
+    const headerPath = shownSection
+        ? `~/portfolio/${t(shownSection.headerKey)}`
+        : "~/portfolio";
     const isNonEnglish = !i18n.language.startsWith("en");
 
     useEffect(() => {
-        if (active !== "how-i-build") {
+        if (swap.shown !== "how-i-build") {
             setIsExpanded(false);
         }
-    }, [active]);
+    }, [swap.shown]);
 
     return (
         <>
@@ -44,7 +48,12 @@ export default function Homepage() {
             }`}
         >
             <ScanBeam phase={scanPhase} />
-            <ScanIntroOverlay phase={scanPhase} />
+            <ScanIntroOverlay
+                phase={scanPhase}
+                closeBlocked={intro.closeBlocked}
+                onConfirm={intro.confirm}
+                onDecline={intro.decline}
+            />
 
              {/** windows top bar */}
             <div
@@ -52,7 +61,7 @@ export default function Homepage() {
                 style={{ ["--scan-i" as string]: 0 }}
             >
                 <LanguageSelector />
-                <div className="text-sm"><span className="font-mono"><TypingText key={t(activeSection.headerKey)} text={`~/portfolio/${t(activeSection.headerKey)}`}/></span></div>
+                <div className="text-sm"><span className="font-mono"><TypingText key={headerPath} text={headerPath}/></span></div>
             </div>
 
             <div className="w-full rounded border-2 border-gray-500 p-3 mt-4 h-auto">
@@ -83,8 +92,8 @@ export default function Homepage() {
                                         <HomeButtonComponent
                                             label={t(section.menuKey)}
                                             anchor={section.anchor}
-                                            active={active}
-                                            setActive={(value) => setActive(value as PortfolioSectionId)}
+                                            active={swap.pending ?? ""}
+                                            setActive={(value) => swap.request(value as PortfolioSectionId)}
                                             showEnMarker={Boolean(section.englishOnly) && isNonEnglish}
                                             compact
                                         />
@@ -114,8 +123,8 @@ export default function Homepage() {
                                         <HomeButtonComponent
                                             label={t(section.menuKey)}
                                             anchor={section.anchor}
-                                            active={active}
-                                            setActive={(value) => setActive(value as PortfolioSectionId)}
+                                            active={swap.pending ?? ""}
+                                            setActive={(value) => swap.request(value as PortfolioSectionId)}
                                             showEnMarker={Boolean(section.englishOnly) && isNonEnglish}
                                         />
                                     </li>
@@ -131,29 +140,53 @@ export default function Homepage() {
                         </div>
                     </div>
 
-                    <div className="w-full min-w-0 h-full">
-                        {/** TItle */}
-                        <div
-                            className="scan-region border border-2 border-emerald-400 py-2 mt-6 text-center"
-                            data-scan-role="section-title"
-                        >
-                            <span className="text-3xl text-gray-200 font-mono">// { t(activeSection.headerKey) }</span>
+                    <div className={`section-swap w-full min-w-0 h-full${swap.className ? ` ${swap.className}` : ""}`}>
+                        <div className="boot-log" ref={swap.bootLogRef} aria-hidden="true">
+                            {swap.bootLines.map((line, index) => (
+                                <div className="boot-line" key={`${index}-${line}`}>{line}</div>
+                            ))}
                         </div>
+                        <div className="program-window" ref={swap.windowRef}>
+                            <div className="program-bar">
+                                <span className="program-marks" aria-hidden="true"><i /><i /><i /></span>
+                                <span className="program-title">{swap.barTitle}</span>
+                            </div>
+                            <div className="program-body">
+                                {shownSection ? (
+                                    <>
+                                        <div
+                                            className="scan-region border border-2 border-emerald-400 py-2 text-center"
+                                            data-scan-role="section-title"
+                                        >
+                                            <span className="text-3xl text-gray-200 font-mono">// { t(shownSection.headerKey) }</span>
+                                        </div>
 
-                        {/** Main content */}
-                        <div
-                            className="scan-region border border-2 border-emerald-400 py-6 mt-6 text-center h-full"
-                            data-scan-role="content-pane"
-                        >
-                            {active === "how-i-build" ? (
-                                <HowIBuildPage
-                                    isExpanded={isExpanded}
-                                    onExpand={() => setIsExpanded(true)}
-                                    onCollapse={() => setIsExpanded(false)}
-                                />
-                            ) : (
-                                <ActivePage />
-                            )}
+                                        <div
+                                            className="scan-region border border-2 border-emerald-400 py-6 mt-6 text-center h-full"
+                                            data-scan-role="content-pane"
+                                        >
+                                            {swap.shown === "how-i-build" ? (
+                                                <HowIBuildPage
+                                                    isExpanded={isExpanded}
+                                                    onExpand={() => setIsExpanded(true)}
+                                                    onCollapse={() => setIsExpanded(false)}
+                                                />
+                                            ) : (
+                                                ActivePage && <ActivePage />
+                                            )}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div
+                                        className="scan-region idle-prompt"
+                                        data-scan-role="content-pane"
+                                    >
+                                        <span aria-hidden="true">[&gt;]</span>
+                                        <span>{t("idle_prompt")}</span>
+                                        <span className="idle-caret" aria-hidden="true" />
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
