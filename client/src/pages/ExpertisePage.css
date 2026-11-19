@@ -1,0 +1,149 @@
+.expertise-console {
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  color: #e5e7eb;
+  font-family: "Share Tech Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+
+.expertise-body {
+  padding: 0.35rem 0.85rem 0.5rem;
+}
+
+.expertise-icon-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.25rem 0 1rem;
+}
+
+.expertise-icon {
+  color: #34d399;
+}
+
+.expertise-copy {
+  display: grid;
+  align-items: start;
+}
+
+.expertise-copy > p {
+  grid-area: 1 / 1;
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+.expertise-copy-sizer {
+  visibility: hidden;
+}
+
+.expertise-copy-caret {
+  display: inline-block;
+  width: 1ch;
+}
+
+.expertise-icon svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.expertise-icon-measure {
+  position: absolute;
+  width: 24px;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.expertise-icon-measure svg {
+  width: 24px;
+  height: 24px;
+}
+
+.expertise-viewport {
+  overflow: hidden;
+  width: 100%;
+  min-width: 0;
+  flex: 1 1 auto;
+  max-width: 28rem;
+}
+
+.expertise-track {
+  display: flex;
+  width: 100%;
+  transition: transform 320ms ease;
+}
+
+.expertise-pager-slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.35rem;
+}
+
+.expertise-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.expertise-pager-label {
+  display: inline-block;
+  max-width: 100%;
+  color: #34d399;
+  background: transparent;
+  line-height: 1.3;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.expertise-arrow {
+  appearance: none;
+  flex: 0 0 auto;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #9ca3af;
+  font: inherit;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.15rem 0.35rem;
+}
+
+.expertise-arrow:hover {
+  border: none;
+  background: transparent;
+  color: #34d399;
+}
+
+.expertise-arrow:focus,
+.expertise-arrow:focus-visible {
+  outline: 1px solid #34d399;
+  outline-offset: 3px;
+}
+
+.expertise-arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.expertise-arrow:disabled:hover {
+  color: #9ca3af;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .expertise-track {
+    transition: none;
+  }
+}

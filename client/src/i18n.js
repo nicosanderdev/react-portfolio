@@ -97,10 +97,10 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           sending_text: "Sending..."
         },
         protocol: {
-          warn_label: "WARN",
-          warn_title: "protocol inactive",
-          warn_body: "recommended action: activate the build protocol",
-          press_enter: "press enter to continue",
+          warn_label: "WARNING",
+          warn_title: "unverified development process detected",
+          warn_body: "solution: access the developer's operating protocol",
+          press_enter: "press enter to investigate",
           loading: "loading",
           no_signal: "no signal",
           back: "back",
@@ -411,10 +411,10 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           sending_text: "Enviando..."
         },
         protocol: {
-          warn_label: "WARN",
-          warn_title: "protocol inactive",
-          warn_body: "recommended action: activate the build protocol",
-          press_enter: "press enter to continue",
+          warn_label: "WARNING",
+          warn_title: "unverified development process detected",
+          warn_body: "solución: acceder al protocolo operativo del desarrollador",
+          press_enter: "pulsa enter para investigar",
           loading: "loading",
           no_signal: "no signal",
           back: "back",
@@ -725,11 +725,11 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           sending_text: "Mandando messagem..."
         },
         protocol: {
-          warn_label: "WARN",
-          warn_title: "protocol inactive",
-          warn_body: "recommended action: activate the build protocol",
+          warn_label: "WARNING",
+          warn_title: "unverified development process detected",
+          warn_body: "solução: acessar o protocolo operacional do desenvolvedor",
           loading: "loading",
-          press_enter: "press enter to continue",
+          press_enter: "pressione enter para investigar",
           no_signal: "no signal",
           back: "back",
           steps: {

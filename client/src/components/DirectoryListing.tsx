@@ -62,17 +62,7 @@ export default function DirectoryListing() {
           name: "sdi_react.md",
           type: "file",
           url: "https://github.com/nicosanderdev/sdi_react",
-        },
-        {
-          name: "SDI_api",
-          type: "file",
-          url: "https://github.com/nicosanderdev/SDI_api",
-        },
-        {
-          name: "SDI_api",
-          type: "file",
-          url: "https://github.com/nicosanderdev/AppElecciones",
-        },
+        }
       ],
     },
     {

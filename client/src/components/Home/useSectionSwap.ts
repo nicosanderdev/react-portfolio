@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   getSectionById,
@@ -8,8 +8,7 @@ import {
   BOOT_MS,
   CLOSE_MS,
   FLOOD_MS,
-  LOADING_HOLD_MS,
-  OPEN_MS,
+  REVEAL_MS,
   SAVING_MS,
   floodLines,
   introLines,
@@ -17,8 +16,7 @@ import {
   swapLang,
 } from "./sectionSwap";
 
-type Phase = "settled" | "saving" | "closing" | "booting" | "loading";
-type Visual = "idle" | "preopen" | "opening";
+type Phase = "settled" | "saving" | "closing" | "booting" | "revealing";
 
 function prefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -29,7 +27,6 @@ export function useSectionSwap(enabled: boolean) {
   const [pending, setPending] = useState<PortfolioSectionId | null>(null);
   const [shown, setShown] = useState<PortfolioSectionId | null>(null);
   const [phase, setPhase] = useState<Phase>("settled");
-  const [visual, setVisual] = useState<Visual>("idle");
   const [saveDots, setSaveDots] = useState(1);
   const [bootLines, setBootLines] = useState<string[]>([]);
 
@@ -66,24 +63,22 @@ export function useSectionSwap(enabled: boolean) {
     setShown(id);
     windowOpen.current = true;
     setPhaseBoth("settled");
-    setVisual("idle");
     setBootLines([]);
     setSaveDots(1);
   }
 
-  function startOpen(token: number, id: PortfolioSectionId) {
+  function startReveal(token: number, id: PortfolioSectionId) {
     if (token !== seq.current) return;
-    setPhaseBoth("loading");
+    shownRef.current = id;
+    setShown(id);
+    windowOpen.current = true;
+    setPhaseBoth("revealing");
     setBootLines([]);
-    setVisual("preopen");
+    setSaveDots(1);
     later(() => {
       if (token !== seq.current) return;
-      setVisual("idle");
-      later(() => {
-        if (token !== seq.current) return;
-        commit(id);
-      }, LOADING_HOLD_MS);
-    }, OPEN_MS);
+      setPhaseBoth("settled");
+    }, REVEAL_MS);
   }
 
   function startFlood(token: number, id: PortfolioSectionId) {
@@ -99,7 +94,7 @@ export function useSectionSwap(enabled: boolean) {
       }, Math.round(i * step));
     }
     later(() => {
-      startOpen(token, id);
+      startReveal(token, id);
     }, FLOOD_MS);
   }
 
@@ -107,7 +102,6 @@ export function useSectionSwap(enabled: boolean) {
     if (token !== seq.current) return;
     setPhaseBoth("booting");
     windowOpen.current = false;
-    setVisual("idle");
     const lines = introLines(swapLang(langRef.current), id);
     setBootLines([lines[0]]);
     for (let i = 1; i < lines.length; i++) {
@@ -126,7 +120,6 @@ export function useSectionSwap(enabled: boolean) {
     if (token !== seq.current) return;
     setPhaseBoth("closing");
     windowOpen.current = false;
-    setVisual("idle");
     later(() => {
       startBoot(token, id);
     }, CLOSE_MS);
@@ -135,7 +128,6 @@ export function useSectionSwap(enabled: boolean) {
   function startSaving(token: number, id: PortfolioSectionId) {
     if (token !== seq.current) return;
     setPhaseBoth("saving");
-    setVisual("idle");
     setSaveDots(1);
     for (let dot = 2; dot <= 3; dot++) {
       const count = dot;
@@ -174,29 +166,19 @@ export function useSectionSwap(enabled: boolean) {
     el.scrollTop = el.scrollHeight;
   }, [bootLines]);
 
-  useLayoutEffect(() => {
-    if (visual !== "preopen") return;
-    void windowRef.current?.offsetWidth;
-    setVisual("opening");
-  }, [visual]);
-
   const lang = swapLang(i18n.language);
   const barTitle =
-    phase === "loading"
-      ? "Loading"
-      : phase === "saving" || phase === "closing"
-        ? savingWord(lang, saveDots)
-        : shown
-          ? `// ${t(getSectionById(shown).headerKey)}`
-          : `// ${t("idle_bar")}`;
+    phase === "saving" || phase === "closing"
+      ? savingWord(lang, saveDots)
+      : shown
+        ? `// ${t(getSectionById(shown).headerKey)}`
+        : `// ${t("idle_bar")}`;
 
   const className = [
     phase === "saving" ? "is-saving" : "",
     phase === "closing" ? "is-closing" : "",
     phase === "booting" ? "is-booting" : "",
-    phase === "loading" ? "is-loading" : "",
-    visual === "preopen" ? "is-preopen" : "",
-    visual === "opening" ? "is-opening" : "",
+    phase === "revealing" ? "is-revealing" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -204,6 +186,7 @@ export function useSectionSwap(enabled: boolean) {
   return {
     pending,
     shown,
+    revealing: phase === "revealing",
     request,
     barTitle,
     bootLines,

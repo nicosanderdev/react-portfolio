@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import TypingText from "../components/TypingText";
 import DirectoryListing from "../components/DirectoryListing";
-import ConsolePulse from "../components/ConsolePlus/ConsolePulse";
 import HomeButtonComponent from "../components/Home/HomeButtonComponent";
 import "../components/Home/SectionSwap.css";
 import {
@@ -144,9 +143,6 @@ export default function Homepage() {
                         <div className="scan-region" style={{ ["--scan-i" as string]: 3 }}>
                             <DirectoryListing />
                         </div>
-                        <div className="scan-region hidden sm:block" style={{ ["--scan-i" as string]: 4 }}>
-                            <ConsolePulse />
-                        </div>
                     </div>
 
                     <div className={`section-swap w-full min-w-0 h-full${swap.className ? ` ${swap.className}` : ""}`}>
@@ -171,23 +167,14 @@ export default function Homepage() {
                                 )}
                             </div>
                             <div className="program-body">
+                                {swap.revealing && (
+                                    <div className="section-scanline" aria-hidden="true" />
+                                )}
                                 {shownSection ? (
-                                    <>
-                                        {swap.shown !== "how-i-build" && (
-                                            <div
-                                                className="scan-region border border-2 border-emerald-400 py-2 text-center"
-                                                data-scan-role="section-title"
-                                            >
-                                                <span className="text-3xl text-gray-200 font-mono">// { t(shownSection.headerKey) }</span>
-                                            </div>
-                                        )}
-
-                                        <div
-                                            className={`scan-region border border-2 border-emerald-400 py-6 text-center h-full${
-                                                swap.shown === "how-i-build" ? "" : " mt-6"
-                                            }`}
-                                            data-scan-role="content-pane"
-                                        >
+                                    <div
+                                        className="scan-region border border-2 border-emerald-400 py-6 text-center h-full"
+                                        data-scan-role="content-pane"
+                                    >
                                             {swap.shown === "how-i-build" ? (
                                                 <HowIBuildPage
                                                     isExpanded={isExpanded}
@@ -196,8 +183,7 @@ export default function Homepage() {
                                             ) : (
                                                 ActivePage && <ActivePage />
                                             )}
-                                        </div>
-                                    </>
+                                    </div>
                                 ) : (
                                     <div
                                         className="scan-region idle-prompt"

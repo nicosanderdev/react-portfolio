@@ -2,8 +2,7 @@ export const SAVING_MS = 500;
 export const CLOSE_MS = 200;
 export const BOOT_MS = 600;
 export const FLOOD_MS = 700;
-export const OPEN_MS = 200;
-export const LOADING_HOLD_MS = 500;
+export const REVEAL_MS = 700;
 
 export type SwapLang = "en" | "es" | "pt";
 

@@ -94,26 +94,30 @@
   font-family: "Share Tech Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
 }
 
-.section-swap.is-preopen .program-window {
-  transform: scaleY(0);
+.section-swap.is-revealing {
+  overflow: hidden;
 }
 
-.section-swap.is-loading [data-scan-role="section-title"],
-.section-swap.is-loading [data-scan-role="content-pane"] {
-  visibility: hidden;
+.section-swap.is-revealing .program-body {
+  position: relative;
+  transform: translateY(-100%);
+  animation: section-slide-down 700ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 
-.homepage-scan.is-settled .section-swap.is-loading [data-scan-role="section-title"],
-.homepage-scan.is-settled .section-swap.is-loading [data-scan-role="content-pane"] {
-  visibility: hidden;
+.section-swap .section-scanline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  z-index: 5;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, #6ee7b7, transparent);
+  box-shadow: 0 0 12px #34d399, 0 0 28px rgb(52 211 153 / 0.45);
 }
 
 .section-swap.is-closing .program-window {
   animation: window-close 200ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
-}
-
-.section-swap.is-opening .program-window {
-  animation: window-open 200ms cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
 }
 
 @keyframes window-close {
@@ -125,17 +129,18 @@
   }
 }
 
-@keyframes window-open {
+@keyframes section-slide-down {
   from {
-    transform: scaleY(0);
+    transform: translateY(-100%);
   }
   to {
-    transform: scaleY(1);
+    transform: translateY(0);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .section-swap .program-window {
+  .section-swap .program-window,
+  .section-swap .program-body {
     animation: none !important;
     transition: none !important;
     transform: none !important;
