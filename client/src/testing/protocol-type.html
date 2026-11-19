@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Protocol type lab</title>
+  <style>
+    @font-face {
+      font-family: "Share Tech Mono";
+      src: url("../assets/fonts/ShareTechMono-Regular.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --emerald: #34d399;
+      --emerald-bright: #6ee7b7;
+      --paper: #e5e7eb;
+      --muted: #9ca3af;
+      --copy: #d1d5db;
+      --heading: #a7f3d0;
+      --frame: #6b7280;
+      --bg: #242424;
+      --size-name: 0.95rem;
+      --size-kicker: 0.78rem;
+      --size-title: 0.95rem;
+      --size-heading: 0.95rem;
+      --size-body: 0.95rem;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--emerald);
+      font-family: "Share Tech Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+      font-synthesis: weight;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .shell {
+      width: min(76rem, calc(100% - 2rem));
+      margin: 1.5rem auto 3rem;
+      padding: clamp(0.85rem, 2vw, 1.5rem);
+      border: 1px solid var(--frame);
+      border-radius: 0.25rem;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      padding-bottom: 0.55rem;
+      border-bottom: 1px solid var(--frame);
+      font-size: 0.875rem;
+    }
+
+    h1 {
+      margin: 1.15rem 0 0;
+      color: var(--paper);
+      font-size: 1.35rem;
+      font-weight: 400;
+    }
+
+    .lede,
+    .note {
+      margin: 0.45rem 0 0;
+      max-width: 46rem;
+      color: var(--muted);
+      font-size: 0.8125rem;
+      line-height: 1.5;
+    }
+
+    .stage {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.85fr);
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+      align-items: start;
+    }
+
+    h2 {
+      margin: 0;
+      color: var(--paper);
+      font-size: 1rem;
+      font-weight: 400;
+    }
+
+    .protocol-window {
+      margin-top: 0.9rem;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid var(--frame);
+      background: rgb(0 0 0 / 0.28);
+      color: var(--paper);
+      font-family: "Share Tech Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+      text-align: left;
+    }
+
+    .protocol-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      min-height: 2rem;
+      padding: 0.35rem 0.7rem;
+      border-bottom: 1px solid var(--frame);
+      color: var(--paper);
+      font-size: 0.8125rem;
+    }
+
+    .protocol-marks {
+      display: inline-flex;
+      gap: 0.3rem;
+    }
+
+    .protocol-marks i {
+      display: inline-block;
+      width: 0.55rem;
+      height: 0.55rem;
+      border: 1px solid var(--emerald);
+    }
+
+    .protocol-title {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .protocol-log {
+      padding: 0.85rem;
+      color: var(--copy);
+      line-height: 1.55;
+    }
+
+    .protocol-step-head {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+      min-width: 0;
+      margin-bottom: 0.85rem;
+    }
+
+    .protocol-step-copy { min-width: 0; }
+
+    .protocol-step-id,
+    .protocol-step-name {
+      margin: 0;
+      color: var(--emerald);
+      letter-spacing: 0.08em;
+      font-size: var(--size-name);
+    }
+
+    .protocol-step-name { text-transform: uppercase; }
+
+    .protocol-kicker {
+      margin: 0.15rem 0 0;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-size: var(--size-kicker);
+    }
+
+    .protocol-substeps {
+      display: flex;
+      flex-direction: column;
+      gap: 1.15rem;
+      min-width: 0;
+    }
+
+    .protocol-substep { min-width: 0; }
+
+    .protocol-substep-title {
+      display: flex;
+      align-items: baseline;
+      gap: 0.65rem;
+      margin: 0;
+      color: var(--emerald);
+      font-size: var(--size-title);
+      font-weight: 400;
+      line-height: 1.4;
+    }
+
+    .protocol-substep-title span:last-child { min-width: 0; }
+
+    .protocol-letter {
+      flex: 0 0 auto;
+      min-width: 1.2em;
+      color: var(--emerald-bright);
+    }
+
+    .protocol-lead,
+    .protocol-block-intro,
+    .protocol-items {
+      color: var(--copy);
+      font-size: var(--size-body);
+    }
+
+    .protocol-lead,
+    .protocol-block-intro {
+      margin: 0.4rem 0 0;
+    }
+
+    .protocol-block {
+      margin-top: 0.65rem;
+      min-width: 0;
+    }
+
+    .protocol-block-heading {
+      margin: 0;
+      color: var(--heading);
+      font-size: var(--size-heading);
+    }
+
+    .protocol-items {
+      margin: 0.35rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .protocol-items li {
+      position: relative;
+      padding-left: 1.15em;
+      overflow-wrap: break-word;
+    }
+
+    .protocol-items li + li { margin-top: 0.2rem; }
+
+    .protocol-items li::before {
+      content: "-";
+      position: absolute;
+      left: 0;
+      color: var(--emerald);
+    }
+
+    .scale {
+      display: flex;
+      flex-direction: column;
+      gap: 0.95rem;
+      margin: 0.9rem 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .scale li {
+      min-width: 0;
+      padding-top: 0.7rem;
+      border-top: 1px solid rgb(107 114 128 / 0.55);
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 0.25rem 0.75rem;
+      margin: 0 0 0.35rem;
+      color: var(--muted);
+      font-size: 0.75rem;
+      line-height: 1.4;
+    }
+
+    .meta code { color: var(--emerald); }
+
+    .controls-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-top: 1.75rem;
+    }
+
+    .reset,
+    .copy {
+      appearance: none;
+      border: 1px solid var(--emerald);
+      background: transparent;
+      color: var(--paper);
+      font: inherit;
+      font-size: 0.8125rem;
+      padding: 0.3rem 0.7rem;
+      cursor: pointer;
+    }
+
+    .reset:hover,
+    .copy:hover { color: var(--emerald); }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+      gap: 0.95rem 1.25rem;
+      margin-top: 0.9rem;
+    }
+
+    .control {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      min-width: 0;
+    }
+
+    .control-name {
+      color: var(--paper);
+      font-size: 0.8125rem;
+    }
+
+    .control code {
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+
+    .control input[type="range"] {
+      width: 100%;
+      margin: 0.2rem 0 0;
+      accent-color: var(--emerald);
+    }
+
+    .control-value {
+      color: var(--emerald);
+      font-size: 0.8125rem;
+    }
+
+    .readout-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-top: 1.75rem;
+    }
+
+    .readout {
+      margin: 0.7rem 0 0;
+      padding: 0.85rem 1rem;
+      border: 1px solid var(--frame);
+      background: rgb(0 0 0 / 0.28);
+      color: var(--copy);
+      font: inherit;
+      font-size: 0.8125rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      overflow-x: auto;
+    }
+
+    @media (max-width: 800px) {
+      .stage { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="topbar">
+      <span>~/portfolio/testing</span>
+      <span>protocol-type.html</span>
+    </div>
+
+    <h1>Protocol type lab</h1>
+    <p class="lede">
+      Font sizes for the How I Build log. Defaults match the desktop cap of
+      <code>.protocol-log</code> (0.95rem). The kicker starts at 0.82em (0.78rem).
+    </p>
+
+    <div class="stage">
+      <section aria-labelledby="preview-heading">
+        <h2 id="preview-heading">// planning</h2>
+        <div class="protocol-window">
+          <div class="protocol-bar">
+            <span class="protocol-marks" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="protocol-title">how-i-build / 01</span>
+          </div>
+          <div class="protocol-log">
+            <header class="protocol-step-head">
+              <p class="protocol-step-id">01</p>
+              <div class="protocol-step-copy">
+                <p class="protocol-step-name">PLANNING</p>
+                <p class="protocol-kicker">analysis · organization · definition</p>
+              </div>
+            </header>
+            <div class="protocol-substeps">
+              <section class="protocol-substep">
+                <h3 class="protocol-substep-title">
+                  <span class="protocol-letter">A</span>
+                  <span>Understand the problem / task</span>
+                </h3>
+                <p class="protocol-lead">Before starting, understand what needs to be solved and what impact the change may have.</p>
+                <div class="protocol-block">
+                  <p class="protocol-block-heading">Initial questions:</p>
+                  <p class="protocol-block-intro">Research can reveal new needs or problems that were not considered at the start.</p>
+                  <ul class="protocol-items">
+                    <li>What do I want to achieve?</li>
+                    <li>What problem am I trying to solve?</li>
+                    <li>Which workflows are affected?</li>
+                  </ul>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="scale-heading">
+        <h2 id="scale-heading">// scale</h2>
+        <ol class="scale">
+          <li>
+            <p class="meta"><code>protocol-step-name</code> <span data-read="name"></span></p>
+            <p class="protocol-step-name">PLANNING</p>
+          </li>
+          <li>
+            <p class="meta"><code>protocol-kicker</code> <span data-read="kicker"></span></p>
+            <p class="protocol-kicker">analysis · organization · definition</p>
+          </li>
+          <li>
+            <p class="meta"><code>protocol-substep-title</code> <span data-read="title"></span></p>
+            <h3 class="protocol-substep-title">
+              <span class="protocol-letter">A</span>
+              <span>Understand the problem / task</span>
+            </h3>
+          </li>
+          <li>
+            <p class="meta"><code>protocol-block-heading</code> <span data-read="heading"></span></p>
+            <p class="protocol-block-heading">Initial questions:</p>
+          </li>
+          <li>
+            <p class="meta"><code>protocol-lead, protocol-block-intro, protocol-items</code> <span data-read="body"></span></p>
+            <p class="protocol-lead">Before starting, understand what needs to be solved and what impact the change may have.</p>
+          </li>
+        </ol>
+      </section>
+    </div>
+
+    <div class="controls-head">
+      <h2>// sizes</h2>
+      <button class="reset" id="reset" type="button">reset</button>
+    </div>
+    <p class="note">Each slider sets that role in rem. Body drives the lead, the intro, and the list together.</p>
+    <div class="controls">
+      <label class="control">
+        <span class="control-name">Title</span>
+        <code>protocol-step-name</code>
+        <input type="range" data-role="name" min="0.6" max="1.6" step="0.01" value="0.95" />
+        <span class="control-value" data-value="name">0.95rem</span>
+      </label>
+      <label class="control">
+        <span class="control-name">Subtitle</span>
+        <code>protocol-kicker</code>
+        <input type="range" data-role="kicker" min="0.6" max="1.6" step="0.01" value="0.78" />
+        <span class="control-value" data-value="kicker">0.78rem</span>
+      </label>
+      <label class="control">
+        <span class="control-name">Section title</span>
+        <code>protocol-substep-title</code>
+        <input type="range" data-role="title" min="0.6" max="1.6" step="0.01" value="0.95" />
+        <span class="control-value" data-value="title">0.95rem</span>
+      </label>
+      <label class="control">
+        <span class="control-name">Subsection heading</span>
+        <code>protocol-block-heading</code>
+        <input type="range" data-role="heading" min="0.6" max="1.6" step="0.01" value="0.95" />
+        <span class="control-value" data-value="heading">0.95rem</span>
+      </label>
+      <label class="control">
+        <span class="control-name">Body</span>
+        <code>protocol-lead, protocol-block-intro, protocol-items</code>
+        <input type="range" data-role="body" min="0.6" max="1.6" step="0.01" value="0.95" />
+        <span class="control-value" data-value="body">0.95rem</span>
+      </label>
+    </div>
+
+    <div class="readout-head">
+      <h2>// css</h2>
+      <button class="copy" id="copy" type="button">copy css</button>
+    </div>
+    <pre class="readout" id="readout"></pre>
+  </main>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var readout = document.getElementById("readout");
+      var resetBtn = document.getElementById("reset");
+      var copyBtn = document.getElementById("copy");
+      var roles = [
+        {
+          id: "name",
+          variable: "--size-name",
+          selector: ".protocol-step-name",
+          rule: ".protocol-step-name",
+          fallback: 0.95
+        },
+        {
+          id: "kicker",
+          variable: "--size-kicker",
+          selector: ".protocol-kicker",
+          rule: ".protocol-kicker",
+          fallback: 0.78
+        },
+        {
+          id: "title",
+          variable: "--size-title",
+          selector: ".protocol-substep-title",
+          rule: ".protocol-substep-title",
+          fallback: 0.95
+        },
+        {
+          id: "heading",
+          variable: "--size-heading",
+          selector: ".protocol-block-heading",
+          rule: ".protocol-block-heading",
+          fallback: 0.95
+        },
+        {
+          id: "body",
+          variable: "--size-body",
+          selector: ".protocol-lead",
+          rule: ".protocol-lead,\n.protocol-block-intro,\n.protocol-items",
+          fallback: 0.95
+        }
+      ];
+
+      function remLabel(value) {
+        return value.toFixed(2) + "rem";
+      }
+
+      function pxOf(selector) {
+        var el = document.querySelector(selector);
+        if (!el) return "";
+        var px = parseFloat(window.getComputedStyle(el).fontSize);
+        if (!isFinite(px)) return "";
+        var rounded = Math.round(px * 10) / 10;
+        return (rounded % 1 === 0 ? String(rounded) : rounded.toFixed(1)) + "px";
+      }
+
+      function apply(role, value) {
+        root.style.setProperty(role.variable, remLabel(value));
+        var valueEl = document.querySelector('[data-value="' + role.id + '"]');
+        if (valueEl) valueEl.textContent = remLabel(value);
+      }
+
+      function render() {
+        roles.forEach(function (role) {
+          var read = document.querySelector('[data-read="' + role.id + '"]');
+          if (read) read.textContent = remLabel(role.value) + " · " + pxOf(role.selector);
+        });
+        if (!readout) return;
+        readout.textContent = roles.map(function (role) {
+          return role.rule + " {\n  font-size: " + remLabel(role.value) + "; /* " + pxOf(role.selector) + " */\n}";
+        }).join("\n\n");
+      }
+
+      function setRole(role, value) {
+        role.value = value;
+        apply(role, value);
+      }
+
+      roles.forEach(function (role) {
+        var input = document.querySelector('input[data-role="' + role.id + '"]');
+        role.input = input;
+        var start = input ? parseFloat(input.value) : role.fallback;
+        if (!isFinite(start)) start = role.fallback;
+        setRole(role, start);
+        if (!input) return;
+        input.addEventListener("input", function () {
+          setRole(role, parseFloat(input.value));
+          render();
+        });
+      });
+
+      render();
+
+      if (resetBtn) {
+        resetBtn.addEventListener("click", function () {
+          roles.forEach(function (role) {
+            if (role.input) role.input.value = role.fallback.toFixed(2);
+            setRole(role, role.fallback);
+          });
+          render();
+        });
+      }
+
+      if (copyBtn && readout) {
+        copyBtn.addEventListener("click", function () {
+          var text = readout.textContent || "";
+          var done = function () {
+            copyBtn.textContent = "copied";
+            window.setTimeout(function () {
+              copyBtn.textContent = "copy css";
+            }, 1200);
+          };
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done).catch(function () {
+              window.getSelection().selectAllChildren(readout);
+            });
+            return;
+          }
+          window.getSelection().selectAllChildren(readout);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

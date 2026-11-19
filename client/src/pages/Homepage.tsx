@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import TypingText from "../components/TypingText";
 import DirectoryListing from "../components/DirectoryListing";
 import ConsolePulse from "../components/ConsolePlus/ConsolePulse";
@@ -33,6 +33,8 @@ export default function Homepage() {
         ? `~/portfolio/${t(shownSection.headerKey)}`
         : "~/portfolio";
     const isNonEnglish = !i18n.language.startsWith("en");
+    const protocolOpen = isExpanded && swap.shown === "how-i-build";
+    const shellRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (swap.shown !== "how-i-build") {
@@ -40,12 +42,19 @@ export default function Homepage() {
         }
     }, [swap.shown]);
 
+    useEffect(() => {
+        if (protocolOpen && shellRef.current) {
+            shellRef.current.scrollTop = 0;
+        }
+    }, [protocolOpen]);
+
     return (
         <>
         <div
+            ref={shellRef}
             className={`${scanShellClassName(scanPhase)} border border-gray-500 rounded shadow-lg text-emerald-400 font-mono p-6 flex flex-col w-full lg:w-[1400px] h-full my-4 ${
-                scanPhase === "done" ? "overflow-y-auto" : "overflow-hidden"
-            }`}
+                scanPhase === "done" && !protocolOpen ? "overflow-y-auto" : "overflow-hidden"
+            }${protocolOpen ? " is-protocol" : ""}`}
         >
             <ScanBeam phase={scanPhase} />
             <ScanIntroOverlay
@@ -150,26 +159,39 @@ export default function Homepage() {
                             <div className="program-bar">
                                 <span className="program-marks" aria-hidden="true"><i /><i /><i /></span>
                                 <span className="program-title">{swap.barTitle}</span>
+                                {protocolOpen && (
+                                    <button
+                                        type="button"
+                                        className="protocol-back"
+                                        onClick={() => setIsExpanded(false)}
+                                    >
+                                        <span aria-hidden="true">[&lt;]</span>
+                                        <span>{t("protocol.back")}</span>
+                                    </button>
+                                )}
                             </div>
                             <div className="program-body">
                                 {shownSection ? (
                                     <>
-                                        <div
-                                            className="scan-region border border-2 border-emerald-400 py-2 text-center"
-                                            data-scan-role="section-title"
-                                        >
-                                            <span className="text-3xl text-gray-200 font-mono">// { t(shownSection.headerKey) }</span>
-                                        </div>
+                                        {swap.shown !== "how-i-build" && (
+                                            <div
+                                                className="scan-region border border-2 border-emerald-400 py-2 text-center"
+                                                data-scan-role="section-title"
+                                            >
+                                                <span className="text-3xl text-gray-200 font-mono">// { t(shownSection.headerKey) }</span>
+                                            </div>
+                                        )}
 
                                         <div
-                                            className="scan-region border border-2 border-emerald-400 py-6 mt-6 text-center h-full"
+                                            className={`scan-region border border-2 border-emerald-400 py-6 text-center h-full${
+                                                swap.shown === "how-i-build" ? "" : " mt-6"
+                                            }`}
                                             data-scan-role="content-pane"
                                         >
                                             {swap.shown === "how-i-build" ? (
                                                 <HowIBuildPage
                                                     isExpanded={isExpanded}
                                                     onExpand={() => setIsExpanded(true)}
-                                                    onCollapse={() => setIsExpanded(false)}
                                                 />
                                             ) : (
                                                 ActivePage && <ActivePage />
