@@ -104,20 +104,6 @@
   text-align: center;
 }
 
-.menu-btn .en {
-  margin-left: 0.35rem;
-  color: var(--emerald);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.025em;
-  line-height: 0;
-  vertical-align: super;
-}
-
-.menu-btn .face-ink .en {
-  color: var(--ink-soft);
-}
-
 .menu-btn .cursor {
   display: inline-block;
   width: 0.62ch;
@@ -200,11 +186,6 @@
 .menu-btn--compact .face {
   gap: 0.4ch;
   padding: 0.7rem 0.45rem;
-}
-
-.menu-btn--compact .en {
-  margin-left: 0.2rem;
-  font-size: 0.6rem;
 }
 
 @keyframes menu-btn-blink {

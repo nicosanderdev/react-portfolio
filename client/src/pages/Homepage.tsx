@@ -24,14 +24,13 @@ export default function Homepage() {
     const intro = useScanIntroPhase();
     const scanPhase = intro.phase;
     const swap = useSectionSwap(scanPhase === "done");
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
 
     const shownSection = swap.shown ? getSectionById(swap.shown) : null;
     const ActivePage = shownSection?.Page;
     const headerPath = shownSection
         ? `~/portfolio/${t(shownSection.headerKey)}`
         : "~/portfolio";
-    const isNonEnglish = !i18n.language.startsWith("en");
     const protocolOpen = isExpanded && swap.shown === "how-i-build";
     const shellRef = useRef<HTMLDivElement>(null);
 
@@ -102,7 +101,6 @@ export default function Homepage() {
                                             anchor={section.anchor}
                                             active={swap.pending ?? ""}
                                             setActive={(value) => swap.request(value as PortfolioSectionId)}
-                                            showEnMarker={Boolean(section.englishOnly) && isNonEnglish}
                                             compact
                                         />
                                     </li>
@@ -133,7 +131,6 @@ export default function Homepage() {
                                             anchor={section.anchor}
                                             active={swap.pending ?? ""}
                                             setActive={(value) => swap.request(value as PortfolioSectionId)}
-                                            showEnMarker={Boolean(section.englishOnly) && isNonEnglish}
                                         />
                                     </li>
                                 ))}

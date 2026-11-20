@@ -5,11 +5,10 @@ type HomeButtonProps = {
   anchor: string;
   active: string;
   setActive: (value: string) => void;
-  showEnMarker?: boolean;
   compact?: boolean;
 };
 
-function MenuLabel({ label, showEnMarker }: { label: string; showEnMarker: boolean }) {
+function MenuLabel({ label }: { label: string }) {
   return (
     <>
       <span className="prompt" aria-hidden="true">
@@ -17,7 +16,6 @@ function MenuLabel({ label, showEnMarker }: { label: string; showEnMarker: boole
       </span>
       <span className="name">
         {label}
-        {showEnMarker && <sup className="en">EN</sup>}
         <span className="cursor" aria-hidden="true" />
       </span>
     </>
@@ -29,7 +27,6 @@ function HomeButtonComponent({
   anchor,
   active,
   setActive,
-  showEnMarker = false,
   compact = false,
 }: HomeButtonProps) {
   const isActive = active === anchor;
@@ -43,10 +40,10 @@ function HomeButtonComponent({
     >
       <span className="wipe" />
       <span className="face face-ink">
-        <MenuLabel label={label} showEnMarker={showEnMarker} />
+        <MenuLabel label={label} />
       </span>
       <span className="face face-paper" aria-hidden="true">
-        <MenuLabel label={label} showEnMarker={showEnMarker} />
+        <MenuLabel label={label} />
       </span>
     </a>
   );

@@ -143,6 +143,13 @@
   color: #34d399;
 }
 
+.protocol-check.is-active .protocol-check-label {
+  text-decoration: underline;
+  text-decoration-color: #34d399;
+  text-underline-offset: 0.22em;
+  animation: protocol-underline-blink 1.05s steps(1, end) infinite;
+}
+
 .protocol-back {
   margin-left: auto;
 }
@@ -472,6 +479,17 @@
   }
 }
 
+@keyframes protocol-underline-blink {
+  0%,
+  45% {
+    text-decoration-color: #34d399;
+  }
+  50%,
+  100% {
+    text-decoration-color: transparent;
+  }
+}
+
 @keyframes protocol-scan-reveal {
   from {
     opacity: 0;
@@ -538,9 +556,14 @@
 
 @media (prefers-reduced-motion: reduce) {
   .protocol-caret,
-  .protocol-underscore {
+  .protocol-underscore,
+  .protocol-check.is-active .protocol-check-label {
     animation: none;
     opacity: 1;
+  }
+
+  .protocol-check.is-active .protocol-check-label {
+    text-decoration-color: #34d399;
   }
 
   .protocol-figure.is-on,

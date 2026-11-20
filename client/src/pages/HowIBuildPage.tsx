@@ -454,7 +454,7 @@ function HowIBuildPage({
               }}
             >
               <span aria-hidden="true">{active ? "[x]" : "[ ]"}</span>
-              <span>{item.label}</span>
+              <span className="protocol-check-label">{item.label}</span>
             </button>
           );
         })}

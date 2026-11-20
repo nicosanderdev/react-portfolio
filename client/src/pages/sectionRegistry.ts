@@ -18,8 +18,6 @@ export type PortfolioSection = {
   menuKey: string;
   headerKey: string;
   Page: ComponentType;
-  /** When true, nav shows an EN marker if the UI language is not English. */
-  englishOnly?: boolean;
 };
 
 export const DEFAULT_SECTION_ID: PortfolioSectionId = "about";
@@ -38,7 +36,6 @@ export const PORTFOLIO_SECTIONS: readonly PortfolioSection[] = [
     menuKey: "menu_how_i_build",
     headerKey: "header_how_i_build",
     Page: HowIBuildPage,
-    englishOnly: true,
   },
   {
     id: "experience",
