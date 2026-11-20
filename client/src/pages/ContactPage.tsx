@@ -1,7 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import contactService, { ContactForm } from '../services/ContactService';
 import { useTranslation } from 'react-i18next';
+import './ContactPage.css';
 
 const initialFormData = {
   nombre: '',
@@ -10,23 +11,54 @@ const initialFormData = {
   mensaje: '',
 };
 
+const RESULT_EXIT_MS = 650;
+
 const ContactPage = () => {
   const { t } = useTranslation();
 
   const [formData, setFormData] = useState(initialFormData);
+  const [leaving, setLeaving] = useState(false);
+  const continueRef = useRef<HTMLButtonElement>(null);
 
   const mutation = useMutation<void, Error, ContactForm>({
-    mutationFn: async (data: ContactForm): Promise<void> => {
-      contactService.sendContactForm(data)
-    },
-    onSuccess: () => {
-      console.log("Message sent successfully!");
-      setFormData(initialFormData);
-    },
+    mutationFn: (data: ContactForm) => contactService.sendContactForm(data),
     onError: (error: Error) => {
       console.error("Submission failed:", error.message);
     },
   });
+  const mutationRef = useRef(mutation);
+  mutationRef.current = mutation;
+
+  const resultOpen = mutation.isSuccess || mutation.isError;
+
+  useEffect(() => {
+    if (!resultOpen) return;
+    const focusTimer = window.setTimeout(() => {
+      continueRef.current?.focus();
+    }, 500);
+    return () => window.clearTimeout(focusTimer);
+  }, [resultOpen]);
+
+  useEffect(() => {
+    if (!leaving) return;
+    const succeeded = mutationRef.current.isSuccess;
+    const exitTimer = window.setTimeout(() => {
+      if (succeeded) setFormData(initialFormData);
+      mutationRef.current.reset();
+      setLeaving(false);
+    }, RESULT_EXIT_MS);
+    return () => window.clearTimeout(exitTimer);
+  }, [leaving]);
+
+  const handleContinue = () => {
+    if (leaving) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      if (mutation.isSuccess) setFormData(initialFormData);
+      mutation.reset();
+      return;
+    }
+    setLeaving(true);
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -55,7 +87,8 @@ const ContactPage = () => {
 
   return (
     <div className="font-mono flex items-center justify-center p-4">
-      <form onSubmit={handleSubmit} className="w-full max-w-2xl border border-emerald-400 p-6 rounded">
+      <div className="contact-form-shell w-full max-w-2xl">
+      <form onSubmit={handleSubmit} className="w-full border border-emerald-400 p-6 rounded">
 
         {/* Name Input */}
         <label className="block mb-4">
@@ -119,17 +152,41 @@ const ContactPage = () => {
         >
           {mutation.isPending ? t('contact.sending_text') : t('contact.send')}
         </button>
-
-        {/* Status Messages */}
-        {mutation.isSuccess && (
-          <p className="mt-4 text-center text-emerald-400">{t('contact.success_message')}</p>
-        )}
-        {mutation.isError && (
-          <p className="mt-4 text-center text-red-500">
-            {mutation.error?.message || t('contact.error_generic')}
-          </p>
-        )}
       </form>
+
+      {resultOpen && (
+        <div
+          className={`contact-result${mutation.isSuccess ? ' is-success' : ' is-error'}${leaving ? ' is-leaving' : ''}`}
+          role="status"
+        >
+          <div className="contact-result-card">
+            <div className="contact-result-flag">
+              <span aria-hidden="true">[!]</span>
+              <span>
+                {mutation.isSuccess
+                  ? t('contact.result_success_label')
+                  : t('contact.result_error_label')}
+              </span>
+            </div>
+            <p className="contact-result-title">
+              {mutation.isSuccess
+                ? t('contact.result_success_message')
+                : mutation.error?.message || t('contact.result_error_generic')}
+            </p>
+            <button
+              ref={continueRef}
+              type="button"
+              className="contact-result-continue"
+              onClick={handleContinue}
+            >
+              <span aria-hidden="true">&gt;</span>
+              <span>{t('contact.result_continue')}</span>
+              <span className="contact-result-caret" aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+      )}
+      </div>
     </div>
   );
 };

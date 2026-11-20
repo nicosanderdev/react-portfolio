@@ -1,0 +1,202 @@
+.contact-form-shell {
+  position: relative;
+}
+
+.contact-result {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  overflow: hidden;
+  background: rgb(0 0 0 / 0.86);
+  text-align: left;
+  font-family: "Share Tech Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+
+.contact-result-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.55rem;
+  width: min(100%, 36rem);
+  padding: 1.1rem 1.25rem 1.15rem;
+  background: #0c1210;
+  animation: contact-result-slide 0.65s cubic-bezier(0.22, 0.61, 0.36, 1) 0.5s both;
+}
+
+.contact-result.is-leaving {
+  animation: contact-result-fade 0.65s linear forwards;
+  pointer-events: none;
+}
+
+.contact-result.is-leaving .contact-result-card {
+  animation: contact-result-slide-out 0.65s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+.contact-result.is-success .contact-result-card {
+  border: 1px solid rgb(52 211 153 / 0.55);
+  box-shadow: 0 0 24px rgb(52 211 153 / 0.08);
+}
+
+.contact-result.is-error .contact-result-card {
+  border: 1px solid rgb(251 191 36 / 0.55);
+  box-shadow: 0 0 24px rgb(251 191 36 / 0.08);
+}
+
+.contact-result-flag {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  letter-spacing: 0.14em;
+}
+
+.contact-result.is-success .contact-result-flag {
+  color: #34d399;
+}
+
+.contact-result.is-error .contact-result-flag {
+  color: #fbbf24;
+}
+
+.contact-result-title,
+.contact-result-body {
+  margin: 0;
+}
+
+.contact-result.is-success .contact-result-title {
+  color: #6ee7b7;
+}
+
+.contact-result.is-error .contact-result-title {
+  color: #fde68a;
+}
+
+.contact-result-body {
+  color: #d1d5db;
+}
+
+.contact-result-continue {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0.35rem 0 0;
+  padding: 0.15rem 0.2rem;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  font: inherit;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  text-align: left;
+}
+
+.contact-result.is-success .contact-result-continue {
+  color: #34d399;
+}
+
+.contact-result.is-error .contact-result-continue {
+  color: #fbbf24;
+}
+
+.contact-result-continue:hover {
+  border: none;
+  background: transparent;
+}
+
+.contact-result.is-success .contact-result-continue:focus,
+.contact-result.is-success .contact-result-continue:focus-visible {
+  outline: 1px solid #34d399;
+  outline-offset: 3px;
+}
+
+.contact-result.is-error .contact-result-continue:focus,
+.contact-result.is-error .contact-result-continue:focus-visible {
+  outline: 1px solid #fbbf24;
+  outline-offset: 3px;
+}
+
+.contact-result-caret {
+  display: inline-block;
+  width: 0.55ch;
+  height: 1em;
+  animation: contact-result-caret 1.05s steps(1, end) infinite;
+}
+
+.contact-result.is-success .contact-result-caret {
+  background: #34d399;
+}
+
+.contact-result.is-error .contact-result-caret {
+  background: #fbbf24;
+}
+
+@keyframes contact-result-slide {
+  from {
+    transform: translateY(-100vh);
+    pointer-events: none;
+  }
+  to {
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+}
+
+@keyframes contact-result-slide-out {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100vh);
+  }
+}
+
+@keyframes contact-result-fade {
+  from {
+    background-color: rgb(0 0 0 / 0.86);
+  }
+  to {
+    background-color: rgb(0 0 0 / 0);
+  }
+}
+
+@keyframes contact-result-caret {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact-result-card {
+    animation: contact-result-show 0s linear 0.5s both;
+  }
+
+  .contact-result.is-leaving,
+  .contact-result.is-leaving .contact-result-card {
+    animation: none;
+  }
+
+  .contact-result-caret {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+@keyframes contact-result-show {
+  from {
+    opacity: 0;
+    pointer-events: none;
+  }
+  to {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}

@@ -7,8 +7,19 @@ export interface ContactForm {
   phone?: string;
 }
 
-// Call Supabase Edge Function instead of Express API
+/** Long enough for the sending state to be visible while testing the form animation. */
+const DEV_SEND_DELAY_MS = 800;
+
+// In development, resolve locally so the form animation can be tested
+// without writing to the database or sending email. Production builds
+// (including `vite preview`) still call the contact-form Edge Function.
 const sendContactForm = async (params: ContactForm): Promise<void> => {
+  if (import.meta.env.DEV) {
+    console.info('[contact] development: message not sent', params);
+    await new Promise((resolve) => setTimeout(resolve, DEV_SEND_DELAY_MS));
+    return;
+  }
+
   try {
     const { data, error } = await supabase.functions.invoke('contact-form', {
       body: params

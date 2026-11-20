@@ -94,7 +94,12 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           message_label: "Message",
           message_placeholder: "Write your message here...",
           send: "Send",
-          sending_text: "Sending..."
+          sending_text: "Sending...",
+          result_success_label: "SUCCESS",
+          result_success_message: "confirmed",
+          result_error_label: "ERROR",
+          result_error_generic: "Could not send the message.",
+          result_continue: "continue"
         },
         protocol: {
           warn_label: "WARNING",
@@ -408,7 +413,12 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           message_label: "Mensaje",
           message_placeholder: "Escribe tu mensaje aquí...",
           send: "Enviar",
-          sending_text: "Enviando..."
+          sending_text: "Enviando...",
+          result_success_label: "ÉXITO",
+          result_success_message: "confirmado",
+          result_error_label: "ERROR",
+          result_error_generic: "No se pudo enviar el mensaje.",
+          result_continue: "continuar"
         },
         protocol: {
           warn_label: "WARNING",
@@ -722,7 +732,12 @@ i18n.use(LanguageDetector).use(initReactI18next).init({
           message_label: "Mensagem",
           message_placeholder: "Escreva sua mensagem aqui...",
           send: "Mandar messagem",
-          sending_text: "Mandando messagem..."
+          sending_text: "Mandando messagem...",
+          result_success_label: "SUCESSO",
+          result_success_message: "confirmado",
+          result_error_label: "ERRO",
+          result_error_generic: "Não foi possível enviar a mensagem.",
+          result_continue: "continuar"
         },
         protocol: {
           warn_label: "WARNING",
